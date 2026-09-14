@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bitácora">
+<meta name="theme-color" content="#F7F3EE">
+<link rel="manifest" href="manifest.json">
+<title>Bitácora</title>
+<style>
+:root{
+  --fondo:#F7F3EE; --superficie:#FFFFFF; --borde:#E6DED4;
+  --texto:#3A332C; --texto-suave:#7A6F63;
+  --acento:#A8705E; --acento-claro:#F0E2DB;
+  --verde:#5C7A63; --verde-claro:#E4EDE5; --alerta:#B3543F;
+  --radio:16px; --sombra:0 1px 3px rgba(58,51,44,.08);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--fondo);color:var(--texto);font-size:16px;line-height:1.5;
+  padding-bottom:92px;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:16px}
+
+header{padding:calc(env(safe-area-inset-top) + 16px) 16px 12px;background:var(--superficie);
+  border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:50}
+.h-nav{display:flex;align-items:center;gap:10px}
+.h-flecha{width:38px;height:38px;flex-shrink:0;border:1px solid var(--borde);background:var(--fondo);
+  border-radius:10px;color:var(--texto);font-size:17px;cursor:pointer;padding:0}
+.h-flecha:disabled{opacity:.3}
+.h-centro{flex:1;text-align:center;min-width:0}
+.h-titulo{font-size:17px;font-weight:650;text-transform:capitalize;line-height:1.25}
+.h-dia{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:1px}
+.h-hoy{background:none;border:none;color:var(--acento);font-size:12.5px;
+  font-weight:600;cursor:pointer;padding:2px}
+
+main{padding:18px 16px}
+section{margin-bottom:22px}
+h2{font-size:13px;font-weight:650;text-transform:uppercase;letter-spacing:.7px;
+   color:var(--texto-suave);margin:0 0 10px 2px}
+.tarjeta{background:var(--superficie);border:1px solid var(--borde);
+  border-radius:var(--radio);padding:16px;box-shadow:var(--sombra)}
+
+.principal{width:100%;border:none;border-radius:var(--radio);padding:26px 20px;
+  font-size:19px;font-weight:650;color:#fff;background:var(--acento);cursor:pointer;
+  box-shadow:0 2px 8px rgba(168,112,94,.25);transition:transform .12s ease}
+.principal:active{transform:scale(.985)}
+.principal.activo{background:var(--verde);box-shadow:0 2px 8px rgba(92,122,99,.25)}
+.principal small{display:block;font-size:13px;font-weight:400;opacity:.9;margin-top:6px}
+.crono{text-align:center;padding:14px 0 4px;font-size:34px;font-weight:300;
+  letter-spacing:1px;font-variant-numeric:tabular-nums;color:var(--verde)}
+.crono-lbl{text-align:center;font-size:13px;color:var(--texto-suave);margin-bottom:12px}
+.crono-alerta{background:var(--acento-claro);color:var(--acento);border-radius:10px;
+  padding:10px 12px;font-size:13px;margin-bottom:12px;line-height:1.45;text-align:center}
+.secundario{width:100%;background:transparent;border:1px dashed var(--borde);
+  border-radius:12px;padding:13px;color:var(--texto-suave);font-size:14px;
+  cursor:pointer;margin-top:10px}
+.secundario:active{background:var(--acento-claro)}
+
+.dosis{display:flex;align-items:center;gap:12px;padding:12px 4px;
+  border-bottom:1px solid var(--borde);cursor:pointer}
+.check{width:28px;height:28px;border-radius:50%;border:2px solid var(--borde);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;
+  transition:all .15s ease}
+.dosis.hecha .check{background:var(--verde);border-color:var(--verde)}
+.dosis-txt{flex:1;min-width:0}
+.dosis-franja{font-weight:600;font-size:15px}
+.dosis-trat{font-size:12.5px;color:var(--texto-suave)}
+.dosis-hora{font-size:13px;color:var(--verde);font-weight:600;font-variant-numeric:tabular-nums}
+.dosis.hecha .dosis-franja{color:var(--texto-suave)}
+.extras{padding-top:12px;border-top:1px solid var(--borde);margin-top:4px}
+.extra-item{display:inline-flex;align-items:center;gap:6px;background:var(--acento-claro);
+  color:var(--acento);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;
+  margin:0 6px 6px 0;cursor:pointer}
+
+.epi{display:flex;gap:12px;padding:13px 4px;border-bottom:1px solid var(--borde);
+  cursor:pointer;align-items:flex-start}
+.epi:last-child{border-bottom:none}
+.epi-int{width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-weight:650;font-size:17px;color:#fff;background:var(--acento)}
+.epi-int.sin{background:var(--borde);color:var(--texto-suave);font-size:13px}
+.epi-info{flex:1;min-width:0}
+.epi-hora{font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.epi-meta{font-size:12.5px;color:var(--texto-suave);margin-top:1px}
+.epi-tags{font-size:12.5px;color:var(--acento);margin-top:3px}
+.pendiente{font-size:12px;color:var(--alerta);font-weight:600}
+
+.vacio{text-align:center;padding:26px 16px;color:var(--texto-suave);font-size:14.5px;line-height:1.6}
+.vacio span{font-size:26px;display:block;margin-bottom:8px}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--borde);background:var(--superficie);border-radius:20px;
+  padding:9px 14px;font-size:14px;color:var(--texto);cursor:pointer}
+.chip.sel{background:var(--acento-claro);border-color:var(--acento);color:var(--acento);font-weight:600}
+.chip.sang.sel,.chip.ok.sel{background:var(--verde-claro);border-color:var(--verde);color:var(--verde)}
+
+.velo{position:fixed;inset:0;background:rgba(58,51,44,.45);z-index:100;display:none;align-items:flex-end}
+.velo.abierto{display:flex}
+.hoja{background:var(--fondo);width:100%;max-height:94vh;overflow-y:auto;
+  border-radius:22px 22px 0 0;padding:8px 18px calc(env(safe-area-inset-bottom) + 26px);
+  -webkit-overflow-scrolling:touch}
+.tirador{width:38px;height:4px;background:var(--borde);border-radius:2px;margin:8px auto 14px}
+.hoja h3{margin:0 0 4px;font-size:19px;font-weight:650}
+.hoja-sub{font-size:13.5px;color:var(--texto-suave);margin-bottom:18px}
+.campo{margin-bottom:20px}
+.campo label{display:block;font-size:14px;font-weight:600;margin-bottom:9px}
+.ayuda{font-size:12.5px;color:var(--texto-suave);font-weight:400;margin-top:-5px;margin-bottom:9px}
+.escala{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.escala button{aspect-ratio:1;border:1px solid var(--borde);background:var(--superficie);
+  border-radius:10px;font-weight:600;color:var(--texto);cursor:pointer;padding:0}
+.escala button.sel{background:var(--acento);color:#fff;border-color:var(--acento)}
+.escala-lbl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--texto-suave);margin-top:6px}
+input[type=time],input[type=date],input[type=text],textarea{width:100%;padding:12px;
+  border:1px solid var(--borde);border-radius:11px;background:var(--superficie);color:var(--texto)}
+textarea{min-height:76px;resize:vertical}
+.duo{display:flex;gap:10px}
+.duo>div{flex:1}
+.duo label{font-size:13px}
+.guardar{width:100%;background:var(--acento);color:#fff;border:none;border-radius:var(--radio);
+  padding:17px;font-size:17px;font-weight:650;cursor:pointer}
+.borrar{width:100%;background:transparent;color:var(--alerta);border:none;padding:15px;
+  font-size:14.5px;cursor:pointer;margin-top:6px}
+.separador{border-top:1px solid var(--borde);margin:4px 0 20px;padding-top:18px}
+.separador-t{font-size:12px;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--texto-suave);font-weight:650;margin-bottom:14px}
+
+/* informe */
+.rango{display:flex;gap:6px;margin-bottom:16px}
+.rango button{flex:1;padding:10px 4px;border:1px solid var(--borde);background:var(--superficie);
+  border-radius:10px;font-size:13.5px;color:var(--texto-suave);cursor:pointer}
+.rango button.sel{background:var(--acento);color:#fff;border-color:var(--acento);font-weight:600}
+.cifras{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.cifra{background:var(--superficie);border:1px solid var(--borde);border-radius:13px;padding:13px}
+.cifra-n{font-size:25px;font-weight:650;line-height:1.15;font-variant-numeric:tabular-nums}
+.cifra-t{font-size:12px;color:var(--texto-suave);margin-top:2px;line-height:1.35}
+.dias{display:flex;gap:4px;align-items:flex-end;overflow-x:auto;padding:6px 2px 0;-webkit-overflow-scrolling:touch}
+.dia-col{flex:0 0 auto;width:30px;text-align:center}
+.dia-barra{height:90px;display:flex;flex-direction:column;justify-content:flex-end}
+.dia-relleno{border-radius:5px 5px 0 0;background:var(--acento);min-height:3px}
+.dia-relleno.cero{background:var(--verde-claro);border:1px solid var(--verde);min-height:5px}
+.dia-num{font-size:10.5px;color:var(--texto-suave);margin-top:5px;font-variant-numeric:tabular-nums}
+.dia-pts{display:flex;gap:2px;justify-content:center;margin-top:4px}
+.pt{width:4px;height:4px;border-radius:50%;background:var(--borde)}
+.pt.on{background:var(--verde)}
+.dia-marca{font-size:9px;color:var(--acento);height:11px;line-height:11px}
+.hbarra{margin-bottom:11px}
+.hbarra-top{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:4px}
+.hbarra-top b{font-weight:600}
+.hbarra-top span{color:var(--texto-suave);font-size:12.5px}
+.hbarra-riel{height:8px;background:var(--fondo);border-radius:4px;overflow:hidden}
+.hbarra-fill{height:100%;background:var(--acento);border-radius:4px}
+.hbarra-fill.v{background:var(--verde)}
+.cruce{border-bottom:1px solid var(--borde);padding:14px 0}
+.cruce:last-child{border-bottom:none;padding-bottom:0}
+.cruce-titulo{font-weight:650;font-size:15px;margin-bottom:2px}
+.cruce-n{font-size:12px;color:var(--texto-suave);margin-bottom:9px}
+.cruce-fila{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:5px}
+.cruce-lbl{width:88px;flex-shrink:0;color:var(--texto-suave);font-size:12.5px}
+.cruce-riel{flex:1;height:18px;background:var(--fondo);border-radius:4px}
+.cruce-fill{height:100%;border-radius:4px;background:var(--borde)}
+.cruce-fill.alto{background:var(--acento)}
+.cruce-val{width:52px;text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:600}
+.veredicto{font-size:13px;margin-top:8px;padding:9px 11px;border-radius:9px;
+  background:var(--fondo);color:var(--texto-suave);line-height:1.45}
+.veredicto.sube{background:var(--acento-claro);color:var(--acento);font-weight:600}
+.comp{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--borde)}
+.comp:last-of-type{border-bottom:none}
+.comp-t{flex:1;font-size:14px}
+.comp-v{font-variant-numeric:tabular-nums;font-size:14px;font-weight:650;width:56px;text-align:right}
+.comp-fl{width:26px;text-align:center;font-size:15px;font-weight:650}
+.mejor{color:var(--verde)} .peor{color:var(--alerta)} .igual{color:var(--texto-suave)}
+
+.aviso{background:var(--acento-claro);border-radius:12px;padding:14px;font-size:13.5px;
+  line-height:1.55;color:var(--texto);margin-bottom:16px}
+.aviso strong{display:block;margin-bottom:3px}
+.nota-metodo{font-size:12px;color:var(--texto-suave);line-height:1.55;margin-top:10px;padding:0 2px}
+.btn-linea{width:100%;background:var(--superficie);border:1px solid var(--borde);border-radius:12px;
+  padding:15px;text-align:left;font-size:15px;color:var(--texto);cursor:pointer;margin-bottom:9px}
+.btn-linea small{display:block;font-size:12.5px;color:var(--texto-suave);margin-top:2px}
+
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--superficie);
+  border-top:1px solid var(--borde);display:flex;z-index:60;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:none;padding:11px 0 13px;color:var(--texto-suave);
+  font-size:11.5px;cursor:pointer}
+nav button.activo{color:var(--acento);font-weight:650}
+nav button span{display:block;font-size:19px;margin-bottom:2px}
+
+#toast{position:fixed;bottom:88px;left:16px;right:16px;z-index:200;background:var(--texto);
+  color:#fff;padding:14px 16px;border-radius:12px;font-size:14.5px;opacity:0;
+  transform:translateY(12px);transition:all .25s ease;pointer-events:none;line-height:1.45}
+#toast.ver{opacity:1;transform:translateY(0)}
+#toast.error{background:var(--alerta)}
+.oculto{display:none !important}
+.pie{text-align:center;font-size:12px;color:var(--texto-suave);margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-nav">
+    <button class="h-flecha" id="flechaAtras" onclick="cambiarDia(-1)">‹</button>
+    <div class="h-centro">
+      <div class="h-titulo" id="tituloVista">Bitácora</div>
+      <div class="h-dia" id="contadorDia"></div>
+      <button class="h-hoy oculto" id="btnVolverHoy" onclick="irAFecha(hoyISO())">volver a hoy</button>
+    </div>
+    <button class="h-flecha" id="flechaAdelante" onclick="cambiarDia(1)">›</button>
+  </div>
+</header>
+
+<main>
+  <!-- ===================== DÍA ===================== -->
+  <div id="vistaHoy">
+    <section>
+      <div id="zonaCrono" class="oculto">
+        <div class="crono" id="crono">0:00</div>
+        <div class="crono-lbl" id="cronoLbl"></div>
+        <div class="crono-alerta oculto" id="cronoAlerta"></div>
+      </div>
+      <button class="principal" id="btnPrincipal" onclick="alternarEpisodio()"></button>
+      <button class="secundario" id="btnPasado" onclick="abrirEpisodioPasado()"></button>
+    </section>
+
+    <section>
+      <h2>Tratamiento</h2>
+      <div class="tarjeta">
+        <div id="listaDosis"></div>
+        <div class="extras">
+          <div id="listaExtras"></div>
+          <button class="secundario" style="margin-top:2px" onclick="agregarExtra()">+ Dosis extra de rescate</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Episodios</h2>
+      <div class="tarjeta" id="listaEpisodios"></div>
+    </section>
+
+    <section>
+      <h2>¿Qué pasó este día?</h2>
+      <div class="tarjeta">
+        <div class="ayuda" style="margin-top:0">
+          Marca lo que aplique. Esto se cruza con las molestias del mismo día y del día siguiente.
+        </div>
+        <div class="chips" id="factoresHoy"></div>
+        <div style="height:18px"></div>
+        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:9px">Sangrado</label>
+        <div class="chips" id="sangradoHoy"></div>
+        <div style="height:18px"></div>
+        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:9px">¿Alguna crema te escoció al aplicarla?</label>
+        <div class="chips" id="escozorHoy"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== INFORME ===================== -->
+  <div id="vistaInforme" class="oculto">
+    <div class="rango" id="selectorRango"></div>
+    <div id="cuerpoInforme"></div>
+  </div>
+
+  <!-- ===================== AJUSTES ===================== -->
+  <div id="vistaAjustes" class="oculto">
+    <section>
+      <div class="aviso">
+        <strong>Tus datos viven solo en este teléfono</strong>
+        No se envían a ningún servidor. Si borras los datos de Safari o cambias
+        de teléfono, se pierden. Por eso: respalda cada domingo.
+      </div>
+      <button class="btn-linea" onclick="exportar()">Descargar respaldo
+        <small>Archivo con todo tu registro, para guardar o analizar</small></button>
+      <button class="btn-linea" onclick="copiarRespaldo()">Copiar respaldo al portapapeles
+        <small>Para pegarlo en una nota o enviártelo por correo</small></button>
+      <button class="btn-linea" onclick="document.getElementById('archivoImport').click()">Restaurar desde un respaldo
+        <small>Reemplaza todo lo que tengas ahora</small></button>
+      <input type="file" id="archivoImport" accept=".json,application/json" class="oculto" onchange="importar(event)">
+    </section>
+
+    <section>
+      <h2>Configuración</h2>
+      <div class="tarjeta">
+        <div class="campo">
+          <label>Primer día de tratamiento</label>
+          <div class="ayuda">Desde aquí se cuentan los 14 días hasta el control.</div>
+          <input type="date" id="cfgInicio" onchange="guardarConfig()">
+        </div>
+        <div class="campo">
+          <label>Nombre del tratamiento de día</label>
+          <input type="text" id="cfgTratA" onchange="guardarConfig()">
+        </div>
+        <div class="campo" style="margin-bottom:0">
+          <label>Nombre del tratamiento de noche</label>
+          <input type="text" id="cfgTratB" onchange="guardarConfig()">
+        </div>
+      </div>
+      <p class="pie" id="pieVersion">
+        Los nombres que escribas aquí quedan solo en tu teléfono.<br>
+        Esta app registra y ordena. No interpreta ni sugiere nada:<br>
+        de eso se encarga tu médico.
+      </p>
+    </section>
+  </div>
+</main>
+
+<!-- ===================== HOJA DEL EPISODIO ===================== -->
+<div class="velo" id="velo" onclick="if(event.target===this)cerrarHoja()">
+  <div class="hoja">
+    <div class="tirador"></div>
+    <h3 id="hojaTitulo">Detalles del episodio</h3>
+    <div class="hoja-sub" id="hojaSub"></div>
+
+    <div class="campo">
+      <div class="duo">
+        <div><label>Empezó</label><input type="time" id="fInicio"></div>
+        <div><label>Terminó</label><input type="time" id="fFin"></div>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label>¿Qué tan fuerte fue?</label>
+      <div class="escala" id="fIntensidad"></div>
+      <div class="escala-lbl"><span>0 · nada</span><span>10 · insoportable</span></div>
+    </div>
+
+    <div class="campo">
+      <label>¿Cómo se sintió?</label>
+      <div class="ayuda">Puedes marcar varias.</div>
+      <div class="chips" id="fTipos"></div>
+    </div>
+
+    <div class="campo">
+      <label>¿Dónde?</label>
+      <div class="chips" id="fLocalizacion"></div>
+    </div>
+
+    <div class="campo">
+      <label>¿Apareció sola o después de algo?</label>
+      <div class="chips" id="fOrigen"></div>
+    </div>
+
+    <div class="campo oculto" id="campoGatillantes">
+      <label>¿Después de qué?</label>
+      <div class="chips" id="fGatillantes"></div>
+    </div>
+
+    <div class="separador">
+      <div class="separador-t">Respuesta al tratamiento</div>
+      <div class="campo">
+        <label>¿Qué la alivió?</label>
+        <div class="chips" id="fAlivio"></div>
+      </div>
+      <div class="campo" style="margin-bottom:0">
+        <label>Si te aplicaste la crema, ¿cuánto duró el alivio?</label>
+        <div class="ayuda">Este dato es de los que más le sirven al médico.</div>
+        <div class="chips" id="fDuracionAlivio"></div>
+      </div>
+    </div>
+
+    <div class="separador">
+      <div class="separador-t">Otros síntomas e impacto</div>
+      <div class="campo">
+        <label>¿Síntomas al orinar?</label>
+        <div class="chips" id="fUrinarios"></div>
+      </div>
+      <div class="campo" style="margin-bottom:0">
+        <label>¿Te impidió hacer algo?</label>
+        <div class="chips" id="fImpacto"></div>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label>Nota</label>
+      <textarea id="fNota" placeholder="Cualquier cosa que quieras contarle al médico..."></textarea>
+    </div>
+
+    <button class="guardar" onclick="guardarEpisodio()">Guardar</button>
+    <button class="borrar" id="btnBorrar" onclick="borrarEpisodio()">Eliminar este episodio</button>
+  </div>
+</div>
+
+<nav>
+  <button id="navHoy" class="activo" onclick="irA('hoy')"><span>◉</span>Día</button>
+  <button id="navInforme" onclick="irA('informe')"><span>▤</span>Informe</button>
+  <button id="navAjustes" onclick="irA('ajustes')"><span>⚙</span>Ajustes</button>
+</nav>
+
+<div id="toast"></div>
+
+<script>
+/* ==========================================================
+   BITÁCORA v2 — datos 100% locales (localStorage)
+   ========================================================== */
+
+const CLAVE = 'bitacora_v1';
+const HORAS_ALERTA_ABIERTO = 8;   // avisa si un episodio lleva demasiado abierto
+
+const FRANJAS = [
+  {id:'d1', franja:'Mañana',      trat:'A'},
+  {id:'d2', franja:'Medio día',   trat:'A'},
+  {id:'d3', franja:'Media tarde', trat:'A'},
+  {id:'n1', franja:'Noche',       trat:'B'}
+];
+
+const TIPOS        = ['Ardor','Escozor','Punzada','Sensación de roce','Picazón','Presión','Otro'];
+const LOCALIZACION = ['Lado izquierdo','Lado derecho','Ambos lados','Entrada','Zona de la uretra','Difuso'];
+const GATILLANTES  = ['Estar sentada','Ropa ajustada','Orinar','Ejercicio','Actividad sexual','Jabón o producto','Otro'];
+const ALIVIOS      = ['Se pasó sola','Después de la crema','Calor','Acostarme','Cambiar de ropa','Nada la alivió'];
+const DUR_ALIVIO   = ['No me alivió','Menos de 1 hora','1 a 2 horas','Más de 2 horas','No me apliqué'];
+const URINARIOS    = ['Ardor al orinar','Más ganas de orinar','Sin síntomas urinarios'];
+const IMPACTO      = ['Trabajar o concentrarme','Dormir','Estar sentada','Salir','No me impidió nada'];
+
+const FACTORES = ['Relaciones sexuales','Muchas horas sentada','Ropa ajustada','Ejercicio',
+                  'Mucho tiempo de pie','Jabón o producto nuevo','Día estresante','Dormí mal'];
+const SANGRADOS = ['Manchado','Leve','Moderado','Abundante'];
+const ESCOZOR   = ['No','Sí, la de día','Sí, la de noche','Ambas'];
+
+let datos = null;
+let fechaActiva = null;     // el día que se está viendo/editando
+let editandoId = null;
+let borrador = {};
+let tickCrono = null;
+let rangoInforme = 14;
+
+/* ---------- PERSISTENCIA ---------- */
+
+function estructuraInicial(){
+  return {config:{inicio:hoyISO(), tratA:'Receta magistral', tratB:'Crema de noche'},
+          episodios:[], dosis:{}, contexto:{}};
+}
+
+function cargar(){
+  try{
+    const crudo = localStorage.getItem(CLAVE);
+    if(!crudo){ datos = estructuraInicial(); guardar(); return; }
+    const p = JSON.parse(crudo);
+    if(!p || typeof p !== 'object' || !Array.isArray(p.episodios)) throw new Error('formato');
+    datos = p;
+    if(!datos.config)   datos.config   = estructuraInicial().config;
+    if(!datos.dosis)    datos.dosis    = {};
+    if(!datos.contexto) datos.contexto = {};
+  }catch(e){
+    datos = estructuraInicial();
+    toast('No se pudo leer el registro guardado. Empezamos uno nuevo; si tienes respaldo, restáuralo desde Ajustes.', true);
+  }
+}
+
+function guardar(){
+  try{ localStorage.setItem(CLAVE, JSON.stringify(datos)); return true; }
+  catch(e){
+    toast('No se pudo guardar en este teléfono. Descarga un respaldo desde Ajustes antes de cerrar la app.', true);
+    return false;
+  }
+}
+
+/* ---------- UTILIDADES ---------- */
+
+function escapar(t){
+  return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function aISO(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function hoyISO(){ return aISO(new Date()); }
+function horaDe(iso){
+  const d = new Date(iso);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+// Fecha LOCAL del instante guardado (no UTC): un episodio de las 21:30 es de HOY
+function fechaDe(iso){ return aISO(new Date(iso)); }
+function isoDesdeHora(hhmm, fechaBase){
+  const [h,m] = hhmm.split(':').map(Number);
+  const d = new Date(fechaBase+'T00:00:00');
+  d.setHours(h,m,0,0);
+  return d.toISOString();
+}
+function sumarDias(fechaISO, n){
+  const d = new Date(fechaISO+'T00:00:00');
+  d.setDate(d.getDate()+n);
+  return aISO(d);
+}
+function numeroDeDia(fecha){
+  const ini = new Date(datos.config.inicio+'T00:00:00');
+  const f = new Date(fecha+'T00:00:00');
+  return Math.floor((f-ini)/86400000)+1;
+}
+function duracionTexto(ms){
+  const min = Math.round(ms/60000);
+  if(min < 60) return min+' min';
+  const h = Math.floor(min/60), m = min%60;
+  return m === 0 ? h+' h' : h+' h '+m+' min';
+}
+function red1(n){ return (Math.round(n*10)/10).toString().replace('.', ','); }
+function esHoy(){ return fechaActiva === hoyISO(); }
+
+/* ---------- ENCABEZADO Y NAVEGACIÓN POR DÍAS ---------- */
+
+function pintarEncabezado(){
+  const d = new Date(fechaActiva+'T00:00:00');
+  let titulo = d.toLocaleDateString('es-CL',{weekday:'long', day:'numeric', month:'long'});
+  if(esHoy()) titulo = 'Hoy · '+d.toLocaleDateString('es-CL',{day:'numeric', month:'long'});
+  else if(fechaActiva === sumarDias(hoyISO(),-1))
+    titulo = 'Ayer · '+d.toLocaleDateString('es-CL',{day:'numeric', month:'long'});
+  document.getElementById('tituloVista').textContent = titulo;
+
+  const n = numeroDeDia(fechaActiva);
+  const cont = document.getElementById('contadorDia');
+  if(n < 1)        cont.textContent = 'antes del tratamiento';
+  else if(n <= 14) cont.textContent = 'Día '+n+' de 14';
+  else             cont.textContent = 'Día '+n+' · seguimiento';
+
+  document.getElementById('flechaAdelante').disabled = esHoy();
+  document.getElementById('btnVolverHoy').classList.toggle('oculto', esHoy());
+}
+
+function cambiarDia(delta){
+  const nueva = sumarDias(fechaActiva, delta);
+  if(nueva > hoyISO()) return;          // no se registra el futuro
+  irAFecha(nueva);
+}
+
+function irAFecha(f){
+  fechaActiva = f;
+  pintarTodo();
+  window.scrollTo(0,0);
+}
+
+/* ---------- DÍA: BOTONES, DOSIS, EPISODIOS ---------- */
+
+function episodioAbierto(){ return datos.episodios.find(e => !e.fin) || null; }
+
+function pintarBotonPrincipal(){
+  const btn = document.getElementById('btnPrincipal');
+  const pasado = document.getElementById('btnPasado');
+  const zona = document.getElementById('zonaCrono');
+  const alerta = document.getElementById('cronoAlerta');
+  const abierto = episodioAbierto();
+
+  if(tickCrono){ clearInterval(tickCrono); tickCrono = null; }
+
+  if(!esHoy()){
+    // Días anteriores: solo registro manual
+    btn.classList.add('oculto');
+    zona.classList.add('oculto');
+    pasado.textContent = '+ Registrar una molestia de este día';
+    return;
+  }
+
+  btn.classList.remove('oculto');
+  pasado.textContent = '+ Registrar una molestia que ya pasó';
+
+  if(abierto){
+    btn.classList.add('activo');
+    btn.innerHTML = 'Ya pasó<small>Toca cuando la molestia ceda</small>';
+    zona.classList.remove('oculto');
+    const fIni = fechaDe(abierto.inicio);
+    document.getElementById('cronoLbl').textContent =
+      'desde las '+horaDe(abierto.inicio)+(fIni !== hoyISO() ? ' de otro día' : '');
+    const horas = (Date.now()-new Date(abierto.inicio).getTime())/3600000;
+    if(horas >= HORAS_ALERTA_ABIERTO){
+      alerta.classList.remove('oculto');
+      alerta.textContent = 'Este episodio lleva '+Math.floor(horas)+' horas abierto. '+
+        'Si se te olvidó cerrarlo, ciérralo y corrige la hora de término.';
+    }else{
+      alerta.classList.add('oculto');
+    }
+    actualizarCrono();
+    tickCrono = setInterval(actualizarCrono, 1000);
+  }else{
+    btn.classList.remove('activo');
+    btn.innerHTML = 'Empezó<small>Registra la hora automáticamente</small>';
+    zona.classList.add('oculto');
+    alerta.classList.add('oculto');
+  }
+}
+
+function actualizarCrono(){
+  const a = episodioAbierto();
+  if(!a) return;
+  const seg = Math.floor((Date.now()-new Date(a.inicio).getTime())/1000);
+  const h = Math.floor(seg/3600), m = Math.floor((seg%3600)/60), s = seg%60;
+  document.getElementById('crono').textContent =
+    (h > 0 ? h+':'+String(m).padStart(2,'0') : m)+':'+String(s).padStart(2,'0');
+}
+
+function dosisDe(fecha){
+  if(!datos.dosis[fecha]) datos.dosis[fecha] = {};
+  if(!datos.dosis[fecha].extras) datos.dosis[fecha].extras = [];
+  return datos.dosis[fecha];
+}
+
+function pintarDosis(){
+  const d = dosisDe(fechaActiva);
+  const cont = document.getElementById('listaDosis');
+  cont.innerHTML = '';
+  FRANJAS.forEach(f => {
+    const hecha = !!d[f.id];
+    const nombre = f.trat === 'A' ? datos.config.tratA : datos.config.tratB;
+    const fila = document.createElement('div');
+    fila.className = 'dosis';
+    if(hecha) fila.classList.add('hecha');
+    fila.onclick = () => alternarDosis(f.id);
+    fila.innerHTML =
+      '<div class="check">'+(hecha ? '✓' : '')+'</div>'+
+      '<div class="dosis-txt"><div class="dosis-franja">'+f.franja+'</div>'+
+      '<div class="dosis-trat">'+escapar(nombre)+'</div></div>'+
+      '<div class="dosis-hora">'+(hecha ? d[f.id] : '')+'</div>';
+    cont.appendChild(fila);
+  });
+
+  const ext = document.getElementById('listaExtras');
+  ext.innerHTML = '';
+  if(d.extras.length === 0){
+    ext.innerHTML = '<div style="font-size:12.5px;color:var(--texto-suave);padding-bottom:4px">'+
+      'Sin dosis extra este día.</div>';
+  }else{
+    d.extras.forEach((h,i) => {
+      const item = document.createElement('span');
+      item.className = 'extra-item';
+      item.textContent = 'Extra '+h+' ✕';
+      item.onclick = () => quitarExtra(i);
+      ext.appendChild(item);
+    });
+  }
+}
+
+function alternarDosis(idFranja){
+  const d = dosisDe(fechaActiva);
+  if(d[idFranja]){
+    delete d[idFranja];
+  }else{
+    // En un día pasado no se puede saber la hora: se marca sin hora
+    if(esHoy()){
+      const n = new Date();
+      d[idFranja] = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+    }else{
+      d[idFranja] = '—';
+    }
+  }
+  if(guardar()) pintarDosis();
+}
+
+function agregarExtra(){
+  const sugerida = esHoy() ? horaDe(new Date().toISOString()) : '';
+  const h = prompt('¿A qué hora fue la dosis extra? (formato 24 h, ej: 16:30)', sugerida);
+  if(!h) return;
+  if(!/^\d{1,2}:\d{2}$/.test(h.trim())){ toast('Escribe la hora así: 16:30', true); return; }
+  const d = dosisDe(fechaActiva);
+  d.extras.push(h.trim());
+  d.extras.sort();
+  if(guardar()){ pintarDosis(); toast('Dosis extra registrada.'); }
+}
+
+function quitarExtra(i){
+  const d = dosisDe(fechaActiva);
+  d.extras.splice(i,1);
+  if(guardar()) pintarDosis();
+}
+
+function pintarEpisodios(){
+  const delDia = datos.episodios.filter(e => fechaDe(e.inicio) === fechaActiva)
+                               .sort((a,b) => new Date(b.inicio)-new Date(a.inicio));
+  const cont = document.getElementById('listaEpisodios');
+  if(delDia.length === 0){
+    cont.innerHTML = esHoy()
+      ? '<div class="vacio"><span>○</span>Todavía no hay episodios hoy.<br>Ojalá siga así.</div>'
+      : '<div class="vacio"><span>○</span>No hay episodios registrados este día.</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  delDia.forEach(e => {
+    const fila = document.createElement('div');
+    fila.className = 'epi';
+    fila.onclick = () => abrirHoja(e.id);
+    const tieneInt = (e.intensidad !== null && e.intensidad !== undefined);
+    const cajaInt = tieneInt ? '<div class="epi-int">'+e.intensidad+'</div>'
+                             : '<div class="epi-int sin">—</div>';
+    let meta;
+    if(!e.fin){ meta = '<span class="pendiente">en curso</span>'; }
+    else{
+      meta = duracionTexto(new Date(e.fin)-new Date(e.inicio));
+      if(!tieneInt) meta += ' · <span class="pendiente">falta completar</span>';
+    }
+    const etiquetas = (e.tipos && e.tipos.length) ? e.tipos.join(' · ') : '';
+    fila.innerHTML = cajaInt+
+      '<div class="epi-info"><div class="epi-hora">'+horaDe(e.inicio)+
+      (e.fin ? ' – '+horaDe(e.fin) : '')+'</div>'+
+      '<div class="epi-meta">'+meta+'</div>'+
+      (etiquetas ? '<div class="epi-tags">'+escapar(etiquetas)+'</div>' : '')+'</div>';
+    cont.appendChild(fila);
+  });
+}
+
+function ctxDe(fecha){
+  if(!datos.contexto[fecha]) datos.contexto[fecha] = {factores:[], sangrado:null, escozor:null};
+  if(!datos.contexto[fecha].factores) datos.contexto[fecha].factores = [];
+  return datos.contexto[fecha];
+}
+
+function pintarFactores(){
+  const c = ctxDe(fechaActiva);
+
+  const cf = document.getElementById('factoresHoy');
+  cf.innerHTML = '';
+  FACTORES.forEach(f => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = f;
+    if(c.factores.indexOf(f) !== -1) b.classList.add('sel');
+    b.onclick = () => {
+      const i = c.factores.indexOf(f);
+      if(i === -1) c.factores.push(f); else c.factores.splice(i,1);
+      if(guardar()) pintarFactores();
+    };
+    cf.appendChild(b);
+  });
+
+  const cs = document.getElementById('sangradoHoy');
+  cs.innerHTML = '';
+  SANGRADOS.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'chip sang';
+    b.textContent = s;
+    if(c.sangrado === s) b.classList.add('sel');
+    b.onclick = () => { c.sangrado = (c.sangrado === s) ? null : s; if(guardar()) pintarFactores(); };
+    cs.appendChild(b);
+  });
+
+  const ce = document.getElementById('escozorHoy');
+  ce.innerHTML = '';
+  ESCOZOR.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    if(s === 'No') b.classList.add('ok');
+    b.textContent = s;
+    if(c.escozor === s) b.classList.add('sel');
+    b.onclick = () => { c.escozor = (c.escozor === s) ? null : s; if(guardar()) pintarFactores(); };
+    ce.appendChild(b);
+  });
+}
+
+function pintarTodo(){
+  pintarEncabezado();
+  pintarBotonPrincipal();
+  pintarDosis();
+  pintarEpisodios();
+  pintarFactores();
+}
+
+/* ---------- ACCIONES ---------- */
+
+function alternarEpisodio(){
+  const abierto = episodioAbierto();
+  if(abierto){
+    abierto.fin = new Date().toISOString();
+    if(guardar()){ irAFecha(fechaDe(abierto.inicio)); abrirHoja(abierto.id); }
+  }else{
+    const nuevo = {id:'e'+Date.now(), inicio:new Date().toISOString(), fin:null,
+                   intensidad:null, tipos:[], localizacion:[], origen:null, gatillantes:[],
+                   alivio:[], duracionAlivio:null, urinarios:[], impacto:[], nota:''};
+    datos.episodios.push(nuevo);
+    if(guardar()){ pintarTodo(); toast('Episodio abierto. Toca "Ya pasó" cuando ceda.'); }
+  }
+}
+
+/* ---------- FORMULARIO ---------- */
+
+function abrirHoja(id){
+  const e = datos.episodios.find(x => x.id === id);
+  if(!e) return;
+  editandoId = id;
+  borrador = {
+    intensidad:e.intensidad,
+    tipos:(e.tipos||[]).slice(),
+    localizacion:(e.localizacion||[]).slice(),
+    origen:e.origen,
+    gatillantes:(e.gatillantes||[]).slice(),
+    alivio:(e.alivio||[]).slice(),
+    duracionAlivio:e.duracionAlivio || null,
+    urinarios:(e.urinarios||[]).slice(),
+    impacto:(e.impacto||[]).slice()
+  };
+  document.getElementById('hojaTitulo').textContent = 'Detalles del episodio';
+  document.getElementById('hojaSub').textContent = 'Completa lo que recuerdes. Puedes volver a editarlo después.';
+  document.getElementById('fInicio').value = horaDe(e.inicio);
+  document.getElementById('fFin').value = e.fin ? horaDe(e.fin) : '';
+  document.getElementById('fNota').value = e.nota || '';
+  document.getElementById('btnBorrar').classList.remove('oculto');
+  construirControles();
+  document.getElementById('velo').classList.add('abierto');
+}
+
+function abrirEpisodioPasado(){
+  editandoId = null;
+  borrador = {intensidad:null, tipos:[], localizacion:[], origen:null, gatillantes:[],
+              alivio:[], duracionAlivio:null, urinarios:[], impacto:[]};
+  document.getElementById('hojaTitulo').textContent = 'Molestia que ya pasó';
+  document.getElementById('hojaSub').textContent =
+    'Se guardará en el día que estás viendo. Anota las horas lo más aproximado que puedas.';
+  document.getElementById('fInicio').value = '';
+  document.getElementById('fFin').value = '';
+  document.getElementById('fNota').value = '';
+  document.getElementById('btnBorrar').classList.add('oculto');
+  construirControles();
+  document.getElementById('velo').classList.add('abierto');
+}
+
+function construirControles(){
+  const esc = document.getElementById('fIntensidad');
+  esc.innerHTML = '';
+  for(let i = 0; i <= 10; i++){
+    const b = document.createElement('button');
+    b.textContent = i;
+    if(borrador.intensidad === i) b.classList.add('sel');
+    b.onclick = () => { borrador.intensidad = i; construirControles(); };
+    esc.appendChild(b);
+  }
+  pintarChips('fTipos', TIPOS, 'tipos', true);
+  pintarChips('fLocalizacion', LOCALIZACION, 'localizacion', true);
+  pintarChips('fOrigen', ['Apareció sola','Después de algo'], 'origen', false);
+  pintarChips('fGatillantes', GATILLANTES, 'gatillantes', true);
+  pintarChips('fAlivio', ALIVIOS, 'alivio', true);
+  pintarChips('fDuracionAlivio', DUR_ALIVIO, 'duracionAlivio', false);
+  pintarChips('fUrinarios', URINARIOS, 'urinarios', true);
+  pintarChips('fImpacto', IMPACTO, 'impacto', true);
+
+  const campoG = document.getElementById('campoGatillantes');
+  if(borrador.origen === 'Después de algo') campoG.classList.remove('oculto');
+  else campoG.classList.add('oculto');
+}
+
+function pintarChips(contenedorId, opciones, campo, multiple){
+  const cont = document.getElementById(contenedorId);
+  cont.innerHTML = '';
+  opciones.forEach(op => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = op;
+    const activo = multiple ? borrador[campo].indexOf(op) !== -1 : borrador[campo] === op;
+    if(activo) b.classList.add('sel');
+    b.onclick = () => {
+      if(multiple){
+        const i = borrador[campo].indexOf(op);
+        if(i === -1) borrador[campo].push(op); else borrador[campo].splice(i,1);
+      }else{
+        borrador[campo] = (borrador[campo] === op) ? null : op;
+        if(campo === 'origen' && borrador.origen !== 'Después de algo') borrador.gatillantes = [];
+      }
+      construirControles();
+    };
+    cont.appendChild(b);
+  });
+}
+
+function guardarEpisodio(){
+  const hIni = document.getElementById('fInicio').value;
+  const hFin = document.getElementById('fFin').value;
+  if(!hIni){ toast('Falta la hora en que empezó.', true); return; }
+
+  // Un episodio nuevo se guarda en el día que se está viendo
+  const fechaBase = editandoId
+    ? fechaDe(datos.episodios.find(x => x.id === editandoId).inicio)
+    : fechaActiva;
+
+  let e;
+  if(editandoId) e = datos.episodios.find(x => x.id === editandoId);
+  else{
+    e = {id:'e'+Date.now(), inicio:null, fin:null};
+    datos.episodios.push(e);
+  }
+
+  e.inicio         = isoDesdeHora(hIni, fechaBase);
+  e.fin            = hFin ? isoDesdeHora(hFin, fechaBase) : null;
+  e.intensidad     = borrador.intensidad;
+  e.tipos          = borrador.tipos;
+  e.localizacion   = borrador.localizacion;
+  e.origen         = borrador.origen;
+  e.gatillantes    = borrador.gatillantes;
+  e.alivio         = borrador.alivio;
+  e.duracionAlivio = borrador.duracionAlivio;
+  e.urinarios      = borrador.urinarios;
+  e.impacto        = borrador.impacto;
+  e.nota           = document.getElementById('fNota').value.trim();
+
+  if(e.fin && new Date(e.fin) < new Date(e.inicio)){
+    const d = new Date(e.fin); d.setDate(d.getDate()+1); e.fin = d.toISOString();
+  }
+  if(guardar()){ cerrarHoja(); pintarTodo(); toast('Guardado.'); }
+}
+
+function borrarEpisodio(){
+  if(!editandoId) return;
+  if(!confirm('¿Eliminar este episodio? No se puede deshacer.')) return;
+  datos.episodios = datos.episodios.filter(x => x.id !== editandoId);
+  if(guardar()){ cerrarHoja(); pintarTodo(); toast('Episodio eliminado.'); }
+}
+
+function cerrarHoja(){
+  document.getElementById('velo').classList.remove('abierto');
+  editandoId = null;
+}
+
+/* ==========================================================
+   INFORME
+   ========================================================== */
+
+function fechasDelRango(){
+  const hoy = hoyISO();
+  let desde = (rangoInforme === 999) ? datos.config.inicio : sumarDias(hoy, -(rangoInforme-1));
+  if(desde < datos.config.inicio) desde = datos.config.inicio;
+  const lista = [];
+  let f = desde, guardia = 0;
+  while(f <= hoy && guardia < 400){ lista.push(f); f = sumarDias(f,1); guardia++; }
+  return lista;
+}
+
+function metricasDia(fecha){
+  const eps = datos.episodios.filter(e => fechaDe(e.inicio) === fecha);
+  const conInt = eps.filter(e => e.intensidad !== null && e.intensidad !== undefined);
+  const maxInt = conInt.length ? Math.max.apply(null, conInt.map(e => e.intensidad)) : null;
+  const cerrados = eps.filter(e => e.fin);
+  const minutos = cerrados.reduce((s,e) => s+(new Date(e.fin)-new Date(e.inicio))/60000, 0);
+  const d = datos.dosis[fecha] || {};
+  return {
+    fecha: fecha,
+    episodios: eps.length,
+    maxInt: maxInt,
+    sumaInt: conInt.reduce((s,e) => s+e.intensidad, 0),
+    nInt: conInt.length,
+    minutos: Math.round(minutos),
+    dosis: FRANJAS.filter(f => !!d[f.id]).length,
+    extras: (d.extras || []).length
+  };
+}
+
+function contar(lista){
+  const mapa = {};
+  lista.forEach(x => { mapa[x] = (mapa[x]||0)+1; });
+  return Object.keys(mapa).map(k => ({clave:k, n:mapa[k]})).sort((a,b) => b.n-a.n);
+}
+
+function barrasHorizontales(items, total, verde){
+  if(items.length === 0) return '<div class="vacio" style="padding:14px">Sin datos todavía.</div>';
+  const max = Math.max.apply(null, items.map(i => i.n));
+  let html = '';
+  items.forEach(i => {
+    const pct = max > 0 ? Math.round(i.n/max*100) : 0;
+    html += '<div class="hbarra"><div class="hbarra-top"><b>'+escapar(i.clave)+'</b>'+
+      '<span>'+i.n+(total ? ' de '+total : '')+'</span></div>'+
+      '<div class="hbarra-riel"><div class="hbarra-fill'+(verde ? ' v' : '')+
+      '" style="width:'+pct+'%"></div></div></div>';
+  });
+  return html;
+}
+
+function compararFactor(factor, fechas, desfase){
+  const con = [], sin = [];
+  fechas.forEach(f => {
+    const fFactor = sumarDias(f, -desfase);
+    const ctx = datos.contexto[fFactor];
+    if(!ctx) return;                       // día sin registro: no cuenta
+    if(ctx.factores.indexOf(factor) !== -1) con.push(metricasDia(f));
+    else sin.push(metricasDia(f));
+  });
+  if(con.length === 0) return null;
+  const prom = arr => arr.length ? arr.reduce((s,m) => s+m.episodios,0)/arr.length : 0;
+  return {nCon:con.length, nSin:sin.length, promCon:prom(con), promSin:prom(sin)};
+}
+
+function filaComparativa(etiqueta, valor, maxRef, alto){
+  const pct = maxRef > 0 ? Math.round(valor/maxRef*100) : 0;
+  return '<div class="cruce-fila"><div class="cruce-lbl">'+etiqueta+'</div>'+
+    '<div class="cruce-riel"><div class="cruce-fill'+(alto ? ' alto' : '')+
+    '" style="width:'+Math.max(pct,3)+'%"></div></div>'+
+    '<div class="cruce-val">'+red1(valor)+'</div></div>';
+}
+
+// Resumen agregado de un bloque de días (para comparar semanas)
+function resumenBloque(fechas){
+  const ms = fechas.map(metricasDia);
+  const nInt = ms.reduce((s,m) => s+m.nInt, 0);
+  return {
+    dias: fechas.length,
+    epsDia: ms.reduce((s,m) => s+m.episodios,0)/fechas.length,
+    intProm: nInt ? ms.reduce((s,m) => s+m.sumaInt,0)/nInt : null,
+    minDia: ms.reduce((s,m) => s+m.minutos,0)/fechas.length,
+    diasLimpios: ms.filter(m => m.episodios === 0).length,
+    adherencia: ms.reduce((s,m) => s+m.dosis,0)/(fechas.length*FRANJAS.length)*100
+  };
+}
+
+function filaComp(titulo, a, b, menosEsMejor, sufijo){
+  if(a === null || b === null) return '';
+  const dif = b-a;
+  let clase = 'igual', flecha = '=';
+  const umbral = Math.abs(a)*0.1;
+  if(Math.abs(dif) > umbral && Math.abs(dif) > 0.05){
+    const mejora = menosEsMejor ? dif < 0 : dif > 0;
+    clase = mejora ? 'mejor' : 'peor';
+    flecha = dif < 0 ? '↓' : '↑';
+  }
+  return '<div class="comp"><div class="comp-t">'+titulo+'</div>'+
+    '<div class="comp-v">'+red1(a)+(sufijo||'')+'</div>'+
+    '<div class="comp-fl '+clase+'">'+flecha+'</div>'+
+    '<div class="comp-v '+clase+'">'+red1(b)+(sufijo||'')+'</div></div>';
+}
+
+function pintarInforme(){
+  const fechas = fechasDelRango();
+  const cont = document.getElementById('cuerpoInforme');
+  const todosEps = datos.episodios.filter(e => fechas.indexOf(fechaDe(e.inicio)) !== -1);
+
+  if(fechas.length === 0 || (todosEps.length === 0 && fechas.length < 2)){
+    cont.innerHTML = '<div class="tarjeta"><div class="vacio"><span>▤</span>'+
+      'Aún no hay suficiente registro.<br>Vuelve en un par de días y aquí vas a ver tus patrones.</div></div>';
+    return;
+  }
+
+  const metricas = fechas.map(metricasDia);
+  const diasSinMolestia = metricas.filter(m => m.episodios === 0).length;
+  const conInt = todosEps.filter(e => e.intensidad !== null && e.intensidad !== undefined);
+  const promInt = conInt.length ? conInt.reduce((s,e) => s+e.intensidad,0)/conInt.length : null;
+  const cerrados = todosEps.filter(e => e.fin);
+  const promDur = cerrados.length
+    ? cerrados.reduce((s,e) => s+(new Date(e.fin)-new Date(e.inicio))/60000,0)/cerrados.length : null;
+  const dosisPos = fechas.length*FRANJAS.length;
+  const dosisHec = metricas.reduce((s,m) => s+m.dosis,0);
+  const extras = metricas.reduce((s,m) => s+m.extras,0);
+  const adherencia = dosisPos > 0 ? Math.round(dosisHec/dosisPos*100) : 0;
+
+  let html = '';
+
+  html += '<section><div class="cifras">'+
+    '<div class="cifra"><div class="cifra-n">'+todosEps.length+'</div>'+
+      '<div class="cifra-t">episodios en '+fechas.length+' día(s)</div></div>'+
+    '<div class="cifra"><div class="cifra-n">'+diasSinMolestia+'</div>'+
+      '<div class="cifra-t">días sin ninguna molestia</div></div>'+
+    '<div class="cifra"><div class="cifra-n">'+(promInt !== null ? red1(promInt) : '—')+'</div>'+
+      '<div class="cifra-t">intensidad promedio (0-10)</div></div>'+
+    '<div class="cifra"><div class="cifra-n">'+(promDur !== null ? duracionTexto(promDur*60000) : '—')+'</div>'+
+      '<div class="cifra-t">duración promedio</div></div>'+
+    '</div></section>';
+
+  /* ----- ¿vas mejor? ----- */
+  html += '<section><h2>¿Vas mejor?</h2><div class="tarjeta">';
+  const todas = [];
+  let f = datos.config.inicio, g = 0;
+  while(f <= hoyISO() && g < 400){ todas.push(f); f = sumarDias(f,1); g++; }
+  if(todas.length < 8){
+    html += '<div class="vacio" style="padding:14px">Para comparar hace falta más de una semana.<br>'+
+            'Llevas '+todas.length+' día(s) de tratamiento.</div>';
+  }else{
+    const sem1 = todas.slice(0,7);
+    const sem2 = todas.slice(7,14);
+    const a = resumenBloque(sem1), b = resumenBloque(sem2);
+    html += '<div style="display:flex;font-size:12px;color:var(--texto-suave);'+
+            'justify-content:flex-end;gap:10px;padding-bottom:4px">'+
+            '<span style="width:56px;text-align:right">días 1-7</span>'+
+            '<span style="width:26px"></span>'+
+            '<span style="width:56px;text-align:right">días 8-'+(7+sem2.length)+'</span></div>';
+    html += filaComp('Episodios por día', a.epsDia, b.epsDia, true, '');
+    html += filaComp('Intensidad promedio', a.intProm, b.intProm, true, '');
+    html += filaComp('Minutos de molestia al día', a.minDia, b.minDia, true, '');
+    html += filaComp('Días sin molestia', a.diasLimpios, b.diasLimpios, false, '');
+    html += filaComp('Cumplimiento de dosis', a.adherencia, b.adherencia, false, '%');
+    html += '<div class="nota-metodo">Verde = va en la dirección deseada. '+
+            'Mira el cumplimiento antes de sacar conclusiones: si bajaron las dosis, '+
+            'la comparación no es limpia.</div>';
+  }
+  html += '</div></section>';
+
+  /* ----- día a día ----- */
+  html += '<section><h2>Día a día</h2><div class="tarjeta"><div class="dias">';
+  metricas.forEach(m => {
+    const ctx = datos.contexto[m.fecha];
+    const altura = m.maxInt !== null ? Math.round(m.maxInt/10*90) : (m.episodios > 0 ? 8 : 0);
+    const clase = (m.episodios === 0) ? 'dia-relleno cero' : 'dia-relleno';
+    let puntos = '';
+    for(let i = 0; i < FRANJAS.length; i++) puntos += '<div class="pt'+(i < m.dosis ? ' on' : '')+'"></div>';
+    const marca = (ctx && ctx.factores && ctx.factores.length) ? '•' : '';
+    html += '<div class="dia-col">'+
+      '<div class="dia-barra"><div class="'+clase+'" style="height:'+Math.max(altura,4)+'px"></div></div>'+
+      '<div class="dia-marca">'+marca+'</div>'+
+      '<div class="dia-num">'+m.fecha.slice(8)+'</div>'+
+      '<div class="dia-pts">'+puntos+'</div></div>';
+  });
+  html += '</div><div class="nota-metodo">La barra es la molestia más fuerte de ese día (0 a 10). '+
+          'Verde claro = día sin molestias. Los cuatro puntitos son las dosis cumplidas. '+
+          'El • indica que ese día marcaste algún factor.</div></div></section>';
+
+  /* ----- horario ----- */
+  const bloques = [{t:'Madrugada (0-6)',d:0,h:6},{t:'Mañana (6-12)',d:6,h:12},
+                   {t:'Tarde (12-18)',d:12,h:18},{t:'Noche (18-24)',d:18,h:24}];
+  const porBloque = bloques.map(b => ({
+    clave:b.t,
+    n:todosEps.filter(e => { const hh = new Date(e.inicio).getHours(); return hh >= b.d && hh < b.h; }).length
+  })).filter(x => x.n > 0);
+  html += '<section><h2>¿A qué hora aparece?</h2><div class="tarjeta">'+
+          barrasHorizontales(porBloque, todosEps.length, false)+'</div></section>';
+
+  /* ----- respuesta a la crema ----- */
+  const dur = contar(todosEps.filter(e => e.duracionAlivio).map(e => e.duracionAlivio));
+  html += '<section><h2>Respuesta a la crema</h2><div class="tarjeta">'+
+          barrasHorizontales(dur, 0, true);
+  if(extras > 0){
+    html += '<div class="nota-metodo">Además registraste '+extras+' dosis extra de rescate en el período.</div>';
+  }
+  html += '</div></section>';
+
+  /* ----- cruces ----- */
+  html += '<section><h2>Qué pasa después de...</h2><div class="tarjeta">';
+  let algunCruce = false;
+  FACTORES.forEach(fa => {
+    const mismo = compararFactor(fa, fechas, 0);
+    const sig   = compararFactor(fa, fechas, 1);
+    if(!mismo && !sig) return;
+    algunCruce = true;
+    const base = mismo || sig;
+    html += '<div class="cruce"><div class="cruce-titulo">'+escapar(fa)+'</div>';
+    html += '<div class="cruce-n">registrado en '+base.nCon+' día(s)</div>';
+    const valores = [];
+    if(mismo) valores.push(mismo.promCon, mismo.promSin);
+    if(sig)   valores.push(sig.promCon, sig.promSin);
+    const maxRef = Math.max.apply(null, valores.concat([0.1]));
+    if(mismo) html += filaComparativa('Mismo día', mismo.promCon, maxRef, mismo.promCon > mismo.promSin);
+    if(sig)   html += filaComparativa('Día después', sig.promCon, maxRef, sig.promCon > sig.promSin);
+    html += filaComparativa('Días sin esto', (mismo ? mismo.promSin : sig.promSin), maxRef, false);
+
+    let texto, sube = false;
+    if(base.nCon < 3 || base.nSin < 3){
+      texto = 'Todavía son pocos días para decir nada. Sigue marcándolo.';
+    }else{
+      const peorMismo = mismo && mismo.promCon > mismo.promSin*1.4;
+      const peorSig   = sig   && sig.promCon   > sig.promSin*1.4;
+      if(peorSig && !peorMismo)      { texto = 'El efecto aparece sobre todo al día siguiente.'; sube = true; }
+      else if(peorMismo && peorSig)  { texto = 'Más molestias el mismo día y también al siguiente.'; sube = true; }
+      else if(peorMismo)             { texto = 'Más molestias el mismo día.'; sube = true; }
+      else                           { texto = 'Por ahora no se ve diferencia clara.'; }
+    }
+    html += '<div class="veredicto'+(sube ? ' sube' : '')+'">'+texto+'</div></div>';
+  });
+  if(!algunCruce){
+    html += '<div class="vacio" style="padding:14px">Marca factores en "¿Qué pasó este día?" '+
+            'y aquí vas a ver si se relacionan con las molestias.</div>';
+  }
+  html += '</div><div class="nota-metodo">Las cifras son el promedio de episodios por día. '+
+          'Esto muestra coincidencias, no causas: sirve para llevar preguntas al control.</div></section>';
+
+  /* ----- listados ----- */
+  const junta = campo => contar([].concat.apply([], todosEps.map(e => e[campo] || [])));
+  html += '<section><h2>Gatillantes inmediatos</h2><div class="tarjeta">'+barrasHorizontales(junta('gatillantes'),0,false)+'</div></section>';
+  html += '<section><h2>Cómo se siente</h2><div class="tarjeta">'+barrasHorizontales(junta('tipos'),0,false)+'</div></section>';
+  html += '<section><h2>Dónde</h2><div class="tarjeta">'+barrasHorizontales(junta('localizacion'),0,false)+'</div></section>';
+  html += '<section><h2>Síntomas al orinar</h2><div class="tarjeta">'+barrasHorizontales(junta('urinarios'),0,false)+'</div></section>';
+  html += '<section><h2>Qué te impidió hacer</h2><div class="tarjeta">'+barrasHorizontales(junta('impacto'),0,false)+'</div></section>';
+  html += '<section><h2>Qué la alivia</h2><div class="tarjeta">'+barrasHorizontales(junta('alivio'),0,true)+'</div></section>';
+
+  /* ----- tratamiento ----- */
+  const escozores = fechas.map(fe => datos.contexto[fe]).filter(c => c && c.escozor && c.escozor !== 'No').length;
+  html += '<section><h2>Cumplimiento del tratamiento</h2><div class="tarjeta">';
+  html += '<div class="hbarra"><div class="hbarra-top"><b>Dosis aplicadas</b><span>'+
+          dosisHec+' de '+dosisPos+'</span></div>'+
+          '<div class="hbarra-riel"><div class="hbarra-fill v" style="width:'+adherencia+'%"></div></div></div>';
+  html += '<div class="nota-metodo" style="margin-top:2px">'+adherencia+'% de las dosis del período'+
+          (escozores > 0 ? ' · escozor al aplicar en '+escozores+' día(s)' : '')+'.</div>';
+  html += '</div></section>';
+
+  html += '<section><button class="btn-linea" onclick="copiarResumen()">'+
+          'Copiar resumen para el control<small>Texto listo para leer o enviar al médico</small></button>'+
+          '<p class="pie">Este informe ordena lo que tú registraste.<br>No es un diagnóstico.</p></section>';
+
+  cont.innerHTML = html;
+}
+
+function pintarSelectorRango(){
+  const opciones = [{n:7,t:'7 días'},{n:14,t:'14 días'},{n:999,t:'Todo'}];
+  const cont = document.getElementById('selectorRango');
+  cont.innerHTML = '';
+  opciones.forEach(o => {
+    const b = document.createElement('button');
+    b.textContent = o.t;
+    if(rangoInforme === o.n) b.classList.add('sel');
+    b.onclick = () => { rangoInforme = o.n; pintarSelectorRango(); pintarInforme(); };
+    cont.appendChild(b);
+  });
+}
+
+function copiarResumen(){
+  const fechas = fechasDelRango();
+  if(fechas.length === 0){ toast('Todavía no hay días registrados en este rango.', true); return; }
+  const eps = datos.episodios.filter(e => fechas.indexOf(fechaDe(e.inicio)) !== -1);
+  const metricas = fechas.map(metricasDia);
+  const conInt = eps.filter(e => e.intensidad !== null && e.intensidad !== undefined);
+  const promInt = conInt.length ? conInt.reduce((s,e) => s+e.intensidad,0)/conInt.length : null;
+  const cerrados = eps.filter(e => e.fin);
+  const promDur = cerrados.length
+    ? cerrados.reduce((s,e) => s+(new Date(e.fin)-new Date(e.inicio))/60000,0)/cerrados.length : null;
+  const junta = campo => contar([].concat.apply([], eps.map(e => e[campo]||[])));
+
+  let t = 'REGISTRO — '+fechas[0]+' a '+fechas[fechas.length-1]+'\n\n';
+  t += 'Episodios: '+eps.length+' en '+fechas.length+' días\n';
+  t += 'Días sin molestia: '+metricas.filter(m => m.episodios === 0).length+'\n';
+  t += 'Intensidad promedio: '+(promInt !== null ? red1(promInt)+'/10' : 'sin dato')+'\n';
+  t += 'Duración promedio: '+(promDur !== null ? duracionTexto(promDur*60000) : 'sin dato')+'\n';
+  t += 'Dosis aplicadas: '+metricas.reduce((s,m)=>s+m.dosis,0)+' de '+(fechas.length*FRANJAS.length);
+  const ex = metricas.reduce((s,m)=>s+m.extras,0);
+  if(ex) t += ' (+'+ex+' extra de rescate)';
+  t += '\n\n';
+
+  const dur = contar(eps.filter(e => e.duracionAlivio).map(e => e.duracionAlivio));
+  if(dur.length) t += 'Respuesta a la crema: '+dur.map(d => d.clave+' ('+d.n+')').join(', ')+'\n';
+  const loc = junta('localizacion');
+  if(loc.length) t += 'Localización: '+loc.slice(0,3).map(l => l.clave+' ('+l.n+')').join(', ')+'\n';
+  const uri = junta('urinarios');
+  if(uri.length) t += 'Síntomas urinarios: '+uri.map(u => u.clave+' ('+u.n+')').join(', ')+'\n';
+  const gat = junta('gatillantes');
+  if(gat.length) t += 'Gatillantes: '+gat.slice(0,4).map(g => g.clave+' ('+g.n+')').join(', ')+'\n';
+  const ali = junta('alivio');
+  if(ali.length) t += 'Lo que más alivia: '+ali.slice(0,3).map(a => a.clave+' ('+a.n+')').join(', ')+'\n';
+  const imp = junta('impacto');
+  if(imp.length) t += 'Impacto: '+imp.slice(0,3).map(i => i.clave+' ('+i.n+')').join(', ')+'\n';
+
+  // Comparación semanal si hay material
+  const todas = [];
+  let f = datos.config.inicio, g = 0;
+  while(f <= hoyISO() && g < 400){ todas.push(f); f = sumarDias(f,1); g++; }
+  if(todas.length >= 8){
+    const a = resumenBloque(todas.slice(0,7)), b = resumenBloque(todas.slice(7,14));
+    t += '\nSemana 1 vs semana 2:\n';
+    t += '  Episodios/día: '+red1(a.epsDia)+' → '+red1(b.epsDia)+'\n';
+    if(a.intProm !== null && b.intProm !== null)
+      t += '  Intensidad: '+red1(a.intProm)+' → '+red1(b.intProm)+'\n';
+    t += '  Minutos/día: '+red1(a.minDia)+' → '+red1(b.minDia)+'\n';
+    t += '  Cumplimiento: '+Math.round(a.adherencia)+'% → '+Math.round(b.adherencia)+'%\n';
+  }
+
+  t += '\nDetalle por día:\n';
+  metricas.forEach(m => {
+    const ctx = datos.contexto[m.fecha];
+    let l = m.fecha+': '+m.episodios+' episodio(s)';
+    if(m.maxInt !== null) l += ', máx '+m.maxInt+'/10';
+    if(m.minutos > 0) l += ', '+m.minutos+' min';
+    l += ', '+m.dosis+'/4 dosis';
+    if(m.extras) l += ' +'+m.extras+' extra';
+    if(ctx && ctx.factores && ctx.factores.length) l += ' — '+ctx.factores.join(', ');
+    if(ctx && ctx.sangrado) l += ' — sangrado '+ctx.sangrado.toLowerCase();
+    if(ctx && ctx.escozor && ctx.escozor !== 'No') l += ' — escozor al aplicar ('+ctx.escozor+')';
+    t += l+'\n';
+  });
+
+  navigator.clipboard.writeText(t).then(
+    () => toast('Resumen copiado. Pégalo donde quieras.'),
+    () => toast('No se pudo copiar. Usa "Descargar respaldo" en Ajustes.', true)
+  );
+}
+
+/* ---------- AJUSTES ---------- */
+
+function cargarAjustes(){
+  document.getElementById('cfgInicio').value = datos.config.inicio;
+  document.getElementById('cfgTratA').value  = datos.config.tratA;
+  document.getElementById('cfgTratB').value  = datos.config.tratB;
+}
+
+function guardarConfig(){
+  const ini = document.getElementById('cfgInicio').value;
+  if(ini) datos.config.inicio = ini;
+  datos.config.tratA = document.getElementById('cfgTratA').value.trim() || 'Tratamiento de día';
+  datos.config.tratB = document.getElementById('cfgTratB').value.trim() || 'Tratamiento de noche';
+  if(guardar()){ pintarTodo(); toast('Configuración actualizada.'); }
+}
+
+function exportar(){
+  try{
+    const blob = new Blob([JSON.stringify(datos, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'bitacora-'+hoyISO()+'.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    toast('Respaldo generado. Guárdalo en Archivos o envíatelo por correo.');
+  }catch(e){
+    toast('No se pudo generar el archivo. Usa "Copiar respaldo al portapapeles".', true);
+  }
+}
+
+async function copiarRespaldo(){
+  try{
+    await navigator.clipboard.writeText(JSON.stringify(datos));
+    toast('Respaldo copiado. Pégalo en una nota y guárdalo.');
+  }catch(e){
+    toast('No se pudo copiar automáticamente. Prueba con "Descargar respaldo".', true);
+  }
+}
+
+function importar(ev){
+  const archivo = ev.target.files[0];
+  if(!archivo) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    try{
+      const p = JSON.parse(lector.result);
+      if(!p || typeof p !== 'object' || !Array.isArray(p.episodios) || !p.config){
+        toast('Ese archivo no parece un respaldo de Bitácora.', true);
+        ev.target.value = ''; return;
+      }
+      if(!confirm('El respaldo tiene '+p.episodios.length+' episodio(s).\n\nEsto REEMPLAZA todo lo que tienes ahora. ¿Continuar?')){
+        ev.target.value = ''; return;
+      }
+      datos = p;
+      if(!datos.dosis) datos.dosis = {};
+      if(!datos.contexto) datos.contexto = {};
+      if(guardar()){ cargarAjustes(); pintarTodo(); toast('Respaldo restaurado.'); }
+    }catch(e){
+      toast('No se pudo leer el archivo: está dañado o no es un respaldo.', true);
+    }
+    ev.target.value = '';
+  };
+  lector.onerror = () => { toast('No se pudo abrir el archivo.', true); ev.target.value = ''; };
+  lector.readAsText(archivo);
+}
+
+/* ---------- NAVEGACIÓN ---------- */
+
+function irA(vista){
+  const vistas = {hoy:'vistaHoy', informe:'vistaInforme', ajustes:'vistaAjustes'};
+  const navs   = {hoy:'navHoy',   informe:'navInforme',   ajustes:'navAjustes'};
+  Object.keys(vistas).forEach(k => {
+    document.getElementById(vistas[k]).classList.toggle('oculto', k !== vista);
+    document.getElementById(navs[k]).classList.toggle('activo', k === vista);
+  });
+  // Las flechas de día solo tienen sentido en la vista de día
+  document.getElementById('flechaAtras').classList.toggle('oculto', vista !== 'hoy');
+  document.getElementById('flechaAdelante').classList.toggle('oculto', vista !== 'hoy');
+  if(vista === 'hoy'){ pintarEncabezado(); }
+  else{
+    document.getElementById('tituloVista').textContent = (vista === 'informe') ? 'Informe' : 'Ajustes';
+    document.getElementById('contadorDia').textContent = '';
+    document.getElementById('btnVolverHoy').classList.add('oculto');
+  }
+  if(vista === 'ajustes') cargarAjustes();
+  if(vista === 'informe'){ pintarSelectorRango(); pintarInforme(); }
+  window.scrollTo(0,0);
+}
+
+let tToast = null;
+function toast(mensaje, esError){
+  const t = document.getElementById('toast');
+  t.textContent = mensaje;
+  t.classList.remove('error');
+  if(esError) t.classList.add('error');
+  t.classList.add('ver');
+  if(tToast) clearTimeout(tToast);
+  tToast = setTimeout(() => t.classList.remove('ver'), esError ? 6000 : 2800);
+}
+
+// Al volver a la app, si cambió el día y estabas en "hoy", saltar al día nuevo
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) return;
+  if(fechaActiva < hoyISO() && !document.getElementById('vistaHoy').classList.contains('oculto')){
+    // solo si estabas viendo lo que era "hoy" cuando cerraste
+    if(fechaActiva === sumarDias(hoyISO(),-1)) fechaActiva = hoyISO();
+  }
+  pintarTodo();
+});
+
+/* ---------- FUNCIONAMIENTO SIN SEÑAL ---------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      // Si falla, la app sigue funcionando con internet; no hay nada que avisar
+    });
+  });
+}
+
+/* ---------- ARRANQUE ---------- */
+cargar();
+fechaActiva = hoyISO();
+pintarTodo();
+</script>
+</body>
+</html>
