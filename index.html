@@ -15,6 +15,7 @@
   --texto:#3A332C; --texto-suave:#7A6F63;
   --acento:#A8705E; --acento-claro:#F0E2DB;
   --verde:#5C7A63; --verde-claro:#E4EDE5; --alerta:#B3543F;
+  --sangre:#9E4F6B; --sexo:#4A6FA5;
   --radio:16px; --sombra:0 1px 3px rgba(58,51,44,.08);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -58,21 +59,6 @@ h2{font-size:13px;font-weight:650;text-transform:uppercase;letter-spacing:.7px;
   cursor:pointer;margin-top:10px}
 .secundario:active{background:var(--acento-claro)}
 
-.dosis{display:flex;align-items:center;gap:12px;padding:12px 4px;
-  border-bottom:1px solid var(--borde);cursor:pointer}
-.check{width:28px;height:28px;border-radius:50%;border:2px solid var(--borde);flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;
-  transition:all .15s ease}
-.dosis.hecha .check{background:var(--verde);border-color:var(--verde)}
-.dosis-txt{flex:1;min-width:0}
-.dosis-franja{font-weight:600;font-size:15px}
-.dosis-trat{font-size:12.5px;color:var(--texto-suave)}
-.dosis-hora{font-size:13px;color:var(--verde);font-weight:600;font-variant-numeric:tabular-nums}
-.dosis.hecha .dosis-franja{color:var(--texto-suave)}
-.extras{padding-top:12px;border-top:1px solid var(--borde);margin-top:4px}
-.extra-item{display:inline-flex;align-items:center;gap:6px;background:var(--acento-claro);
-  color:var(--acento);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;
-  margin:0 6px 6px 0;cursor:pointer}
 
 .epi{display:flex;gap:12px;padding:13px 4px;border-bottom:1px solid var(--borde);
   cursor:pointer;align-items:flex-start}
@@ -140,10 +126,23 @@ textarea{min-height:76px;resize:vertical}
 .dia-relleno{border-radius:5px 5px 0 0;background:var(--acento);min-height:3px}
 .dia-relleno.cero{background:var(--verde-claro);border:1px solid var(--verde);min-height:5px}
 .dia-num{font-size:10.5px;color:var(--texto-suave);margin-top:5px;font-variant-numeric:tabular-nums}
-.dia-pts{display:flex;gap:2px;justify-content:center;margin-top:4px}
-.pt{width:4px;height:4px;border-radius:50%;background:var(--borde)}
-.pt.on{background:var(--verde)}
 .dia-marca{font-size:9px;color:var(--acento);height:11px;line-height:11px}
+.dia-sang{height:4px;border-radius:2px;margin-top:5px;background:transparent}
+.dia-sang.on{background:var(--sangre)}
+.dia-sexo{height:4px;border-radius:2px;margin-top:2px;background:transparent}
+.dia-sexo.on{background:var(--sexo)}
+
+/* tabla de cruces */
+.mtx{display:grid;gap:3px 4px;align-items:center;margin-top:4px}
+.mtx div{font-size:11.5px;font-variant-numeric:tabular-nums;text-align:center;
+  padding:5px 2px;border-radius:6px;background:var(--fondo)}
+.mtx .mtx-h{background:transparent;color:var(--texto-suave);font-size:10.5px;
+  line-height:1.2;padding:0 1px 3px}
+.mtx .mtx-l{background:transparent;text-align:left;font-size:12px;
+  color:var(--texto-suave);padding-left:0}
+.mtx .mtx-sin{background:var(--verde-claro);color:var(--verde);font-weight:600}
+.mtx .mtx-alto{background:var(--acento-claro);color:var(--acento);font-weight:700}
+.mtx .mtx-nd{color:var(--borde)}
 .hbarra{margin-bottom:11px}
 .hbarra-top{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:4px}
 .hbarra-top b{font-weight:600}
@@ -223,34 +222,37 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
     </section>
 
     <section>
-      <h2>Tratamiento</h2>
-      <div class="tarjeta">
-        <div id="listaDosis"></div>
-        <div class="extras">
-          <div id="listaExtras"></div>
-          <button class="secundario" style="margin-top:2px" onclick="agregarExtra()">+ Dosis extra de rescate</button>
-        </div>
-      </div>
-    </section>
-
-    <section>
       <h2>Episodios</h2>
       <div class="tarjeta" id="listaEpisodios"></div>
     </section>
 
     <section>
-      <h2>¿Qué pasó este día?</h2>
+      <h2>Menstruación</h2>
+      <div class="tarjeta">
+        <div class="ayuda" style="margin-top:0">
+          Marca cualquier sangrado, aunque sea poco. No hace falta saber en qué día del ciclo vas.
+        </div>
+        <div class="chips" id="menstruacionHoy"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Relaciones sexuales</h2>
+      <div class="tarjeta">
+        <div class="ayuda" style="margin-top:0">
+          Si hubo, marca cómo fue. Si no hubo, no marques nada.
+        </div>
+        <div class="chips" id="sexoHoy"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Otras cosas de este día</h2>
       <div class="tarjeta">
         <div class="ayuda" style="margin-top:0">
           Marca lo que aplique. Esto se cruza con las molestias del mismo día y del día siguiente.
         </div>
         <div class="chips" id="factoresHoy"></div>
-        <div style="height:18px"></div>
-        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:9px">Sangrado</label>
-        <div class="chips" id="sangradoHoy"></div>
-        <div style="height:18px"></div>
-        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:9px">¿Alguna crema te escoció al aplicarla?</label>
-        <div class="chips" id="escozorHoy"></div>
       </div>
     </section>
   </div>
@@ -346,7 +348,7 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
     </div>
 
     <div class="separador">
-      <div class="separador-t">Respuesta al tratamiento</div>
+      <div class="separador-t">Alivio</div>
       <div class="campo">
         <label>¿Qué la alivió?</label>
         <div class="chips" id="fAlivio"></div>
@@ -396,13 +398,6 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
 const CLAVE = 'bitacora_v1';
 const HORAS_ALERTA_ABIERTO = 8;   // avisa si un episodio lleva demasiado abierto
 
-const FRANJAS = [
-  {id:'d1', franja:'Mañana',      trat:'A'},
-  {id:'d2', franja:'Medio día',   trat:'A'},
-  {id:'d3', franja:'Media tarde', trat:'A'},
-  {id:'n1', franja:'Noche',       trat:'B'}
-];
-
 const TIPOS        = ['Ardor','Escozor','Punzada','Sensación de roce','Picazón','Presión','Otro'];
 const LOCALIZACION = ['Lado izquierdo','Lado derecho','Ambos lados','Entrada','Zona de la uretra','Difuso'];
 const GATILLANTES  = ['Estar sentada','Ropa ajustada','Orinar','Ejercicio','Actividad sexual','Jabón o producto','Otro'];
@@ -411,10 +406,26 @@ const DUR_ALIVIO   = ['No me alivió','Menos de 1 hora','1 a 2 horas','Más de 2
 const URINARIOS    = ['Ardor al orinar','Más ganas de orinar','Sin síntomas urinarios'];
 const IMPACTO      = ['Trabajar o concentrarme','Dormir','Estar sentada','Salir','No me impidió nada'];
 
-const FACTORES = ['Relaciones sexuales','Muchas horas sentada','Ropa ajustada','Ejercicio',
+const FACTORES = ['Muchas horas sentada','Ropa ajustada','Ejercicio',
                   'Mucho tiempo de pie','Jabón o producto nuevo','Día estresante','Dormí mal'];
+
+// Menstruación y relaciones sexuales son variables propias, con su propio
+// registro en la pantalla del día y su propia sección en el informe.
 const SANGRADOS = ['Manchado','Leve','Moderado','Abundante'];
-const ESCOZOR   = ['No','Sí, la de día','Sí, la de noche','Ambas'];
+const SEXO      = ['Sin dolor','Dolor durante','Dolor después','Dolor durante y después','Sin detalle'];
+
+const MARCA_SANGRADO = '__sangrado__';
+const MARCA_SEXO     = '__sexo__';
+
+// Estas dos se miran hasta 2 días después, porque su efecto puede arrastrarse.
+const PRINCIPALES = [
+  {clave:MARCA_SANGRADO, titulo:'Menstruación',        desfases:[0,1,2]},
+  {clave:MARCA_SEXO,     titulo:'Relaciones sexuales', desfases:[0,1,2]}
+];
+const MARCADORES = PRINCIPALES.concat(
+  FACTORES.map(f => ({clave:f, titulo:f, desfases:[0,1]}))
+);
+const ETIQUETA_DESFASE = {0:'Mismo día', 1:'1 día después', 2:'2 días después'};
 
 let datos = null;
 let fechaActiva = null;     // el día que se está viendo/editando
@@ -440,10 +451,28 @@ function cargar(){
     if(!datos.config)   datos.config   = estructuraInicial().config;
     if(!datos.dosis)    datos.dosis    = {};
     if(!datos.contexto) datos.contexto = {};
+    migrarContexto();
   }catch(e){
     datos = estructuraInicial();
     toast('No se pudo leer el registro guardado. Empezamos uno nuevo; si tienes respaldo, restáuralo desde Ajustes.', true);
   }
+}
+
+// Versiones anteriores guardaban "Relaciones sexuales" como un factor más.
+// Ahora es un campo propio: se mueve para que el historial no se pierda.
+function migrarContexto(){
+  let cambios = 0;
+  Object.keys(datos.contexto || {}).forEach(f => {
+    const c = datos.contexto[f];
+    if(!c || !Array.isArray(c.factores)) return;
+    const i = c.factores.indexOf('Relaciones sexuales');
+    if(i === -1) return;
+    c.factores.splice(i, 1);
+    if(!c.sexo) c.sexo = 'Sin detalle';   // no inventamos si hubo dolor o no
+    cambios++;
+  });
+  if(cambios > 0) guardar();
+  return cambios;
 }
 
 function guardar(){
@@ -584,79 +613,6 @@ function actualizarCrono(){
     (h > 0 ? h+':'+String(m).padStart(2,'0') : m)+':'+String(s).padStart(2,'0');
 }
 
-function dosisDe(fecha){
-  if(!datos.dosis[fecha]) datos.dosis[fecha] = {};
-  if(!datos.dosis[fecha].extras) datos.dosis[fecha].extras = [];
-  return datos.dosis[fecha];
-}
-
-function pintarDosis(){
-  const d = dosisDe(fechaActiva);
-  const cont = document.getElementById('listaDosis');
-  cont.innerHTML = '';
-  FRANJAS.forEach(f => {
-    const hecha = !!d[f.id];
-    const nombre = f.trat === 'A' ? datos.config.tratA : datos.config.tratB;
-    const fila = document.createElement('div');
-    fila.className = 'dosis';
-    if(hecha) fila.classList.add('hecha');
-    fila.onclick = () => alternarDosis(f.id);
-    fila.innerHTML =
-      '<div class="check">'+(hecha ? '✓' : '')+'</div>'+
-      '<div class="dosis-txt"><div class="dosis-franja">'+f.franja+'</div>'+
-      '<div class="dosis-trat">'+escapar(nombre)+'</div></div>'+
-      '<div class="dosis-hora">'+(hecha ? d[f.id] : '')+'</div>';
-    cont.appendChild(fila);
-  });
-
-  const ext = document.getElementById('listaExtras');
-  ext.innerHTML = '';
-  if(d.extras.length === 0){
-    ext.innerHTML = '<div style="font-size:12.5px;color:var(--texto-suave);padding-bottom:4px">'+
-      'Sin dosis extra este día.</div>';
-  }else{
-    d.extras.forEach((h,i) => {
-      const item = document.createElement('span');
-      item.className = 'extra-item';
-      item.textContent = 'Extra '+h+' ✕';
-      item.onclick = () => quitarExtra(i);
-      ext.appendChild(item);
-    });
-  }
-}
-
-function alternarDosis(idFranja){
-  const d = dosisDe(fechaActiva);
-  if(d[idFranja]){
-    delete d[idFranja];
-  }else{
-    // En un día pasado no se puede saber la hora: se marca sin hora
-    if(esHoy()){
-      const n = new Date();
-      d[idFranja] = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-    }else{
-      d[idFranja] = '—';
-    }
-  }
-  if(guardar()) pintarDosis();
-}
-
-function agregarExtra(){
-  const sugerida = esHoy() ? horaDe(new Date().toISOString()) : '';
-  const h = prompt('¿A qué hora fue la dosis extra? (formato 24 h, ej: 16:30)', sugerida);
-  if(!h) return;
-  if(!/^\d{1,2}:\d{2}$/.test(h.trim())){ toast('Escribe la hora así: 16:30', true); return; }
-  const d = dosisDe(fechaActiva);
-  d.extras.push(h.trim());
-  d.extras.sort();
-  if(guardar()){ pintarDosis(); toast('Dosis extra registrada.'); }
-}
-
-function quitarExtra(i){
-  const d = dosisDe(fechaActiva);
-  d.extras.splice(i,1);
-  if(guardar()) pintarDosis();
-}
 
 function pintarEpisodios(){
   const delDia = datos.episodios.filter(e => fechaDe(e.inicio) === fechaActiva)
@@ -693,13 +649,34 @@ function pintarEpisodios(){
 }
 
 function ctxDe(fecha){
-  if(!datos.contexto[fecha]) datos.contexto[fecha] = {factores:[], sangrado:null, escozor:null};
+  if(!datos.contexto[fecha]) datos.contexto[fecha] = {factores:[], sangrado:null, sexo:null};
   if(!datos.contexto[fecha].factores) datos.contexto[fecha].factores = [];
   return datos.contexto[fecha];
 }
 
+// Chips de selección única sobre un campo del día (menstruación, relaciones)
+function chipsUnicos(contenedorId, opciones, campo, clase){
+  const c = ctxDe(fechaActiva);
+  const cont = document.getElementById(contenedorId);
+  cont.innerHTML = '';
+  opciones.forEach(op => {
+    const b = document.createElement('button');
+    b.className = clase ? 'chip '+clase : 'chip';
+    b.textContent = op;
+    if(c[campo] === op) b.classList.add('sel');
+    b.onclick = () => {
+      c[campo] = (c[campo] === op) ? null : op;   // volver a tocar lo desmarca
+      if(guardar()) pintarFactores();
+    };
+    cont.appendChild(b);
+  });
+}
+
 function pintarFactores(){
   const c = ctxDe(fechaActiva);
+
+  chipsUnicos('menstruacionHoy', SANGRADOS, 'sangrado', 'sang');
+  chipsUnicos('sexoHoy', SEXO, 'sexo', '');
 
   const cf = document.getElementById('factoresHoy');
   cf.innerHTML = '';
@@ -715,35 +692,11 @@ function pintarFactores(){
     };
     cf.appendChild(b);
   });
-
-  const cs = document.getElementById('sangradoHoy');
-  cs.innerHTML = '';
-  SANGRADOS.forEach(s => {
-    const b = document.createElement('button');
-    b.className = 'chip sang';
-    b.textContent = s;
-    if(c.sangrado === s) b.classList.add('sel');
-    b.onclick = () => { c.sangrado = (c.sangrado === s) ? null : s; if(guardar()) pintarFactores(); };
-    cs.appendChild(b);
-  });
-
-  const ce = document.getElementById('escozorHoy');
-  ce.innerHTML = '';
-  ESCOZOR.forEach(s => {
-    const b = document.createElement('button');
-    b.className = 'chip';
-    if(s === 'No') b.classList.add('ok');
-    b.textContent = s;
-    if(c.escozor === s) b.classList.add('sel');
-    b.onclick = () => { c.escozor = (c.escozor === s) ? null : s; if(guardar()) pintarFactores(); };
-    ce.appendChild(b);
-  });
 }
 
 function pintarTodo(){
   pintarEncabezado();
   pintarBotonPrincipal();
-  pintarDosis();
   pintarEpisodios();
   pintarFactores();
 }
@@ -921,16 +874,13 @@ function metricasDia(fecha){
   const maxInt = conInt.length ? Math.max.apply(null, conInt.map(e => e.intensidad)) : null;
   const cerrados = eps.filter(e => e.fin);
   const minutos = cerrados.reduce((s,e) => s+(new Date(e.fin)-new Date(e.inicio))/60000, 0);
-  const d = datos.dosis[fecha] || {};
   return {
     fecha: fecha,
     episodios: eps.length,
     maxInt: maxInt,
     sumaInt: conInt.reduce((s,e) => s+e.intensidad, 0),
     nInt: conInt.length,
-    minutos: Math.round(minutos),
-    dosis: FRANJAS.filter(f => !!d[f.id]).length,
-    extras: (d.extras || []).length
+    minutos: Math.round(minutos)
   };
 }
 
@@ -954,26 +904,52 @@ function barrasHorizontales(items, total, verde){
   return html;
 }
 
-function compararFactor(factor, fechas, desfase){
-  const con = [], sin = [];
-  fechas.forEach(f => {
-    const fFactor = sumarDias(f, -desfase);
-    const ctx = datos.contexto[fFactor];
-    if(!ctx) return;                       // día sin registro: no cuenta
-    if(ctx.factores.indexOf(factor) !== -1) con.push(metricasDia(f));
-    else sin.push(metricasDia(f));
-  });
-  if(con.length === 0) return null;
-  const prom = arr => arr.length ? arr.reduce((s,m) => s+m.episodios,0)/arr.length : 0;
-  return {nCon:con.length, nSin:sin.length, promCon:prom(con), promSin:prom(sin)};
+// ¿Ese día tenía la marca? null = día sin ningún registro (no cuenta en el cruce)
+function tieneMarca(fecha, marca){
+  const ctx = datos.contexto[fecha];
+  if(!ctx) return null;
+  if(marca === MARCA_SANGRADO) return !!ctx.sangrado;
+  if(marca === MARCA_SEXO)     return !!ctx.sexo;
+  return (ctx.factores || []).indexOf(marca) !== -1;
 }
 
-function filaComparativa(etiqueta, valor, maxRef, alto){
-  const pct = maxRef > 0 ? Math.round(valor/maxRef*100) : 0;
-  return '<div class="cruce-fila"><div class="cruce-lbl">'+etiqueta+'</div>'+
-    '<div class="cruce-riel"><div class="cruce-fill'+(alto ? ' alto' : '')+
-    '" style="width:'+Math.max(pct,3)+'%"></div></div>'+
-    '<div class="cruce-val">'+red1(valor)+'</div></div>';
+// Dos métricas por grupo de días: cuántos episodios y qué tan fuertes.
+// La intensidad se promedia POR EPISODIO, no por día: así un día sin
+// molestias no aporta un cero que hundiría el promedio.
+function statsDe(ms){
+  const n = ms.reduce((s,m) => s+m.nInt, 0);
+  return {
+    dias: ms.length,
+    eps: ms.length ? ms.reduce((s,m) => s+m.episodios,0)/ms.length : 0,
+    int: n ? ms.reduce((s,m) => s+m.sumaInt,0)/n : null
+  };
+}
+
+// Días que caen `desfase` días después de la marca
+function diasConMarca(marca, fechas, desfase){
+  return fechas.filter(f => tieneMarca(sumarDias(f,-desfase), marca) === true).map(metricasDia);
+}
+
+// Baseline limpio: días sin la marca ese día NI en los días previos que se
+// están mirando. Sin esto, un "día sin regla" podría ser el día después
+// de la regla y ensuciar la comparación.
+function diasLimpios(marca, fechas, maxDesfase){
+  return fechas.filter(f => {
+    for(let d = 0; d <= maxDesfase; d++){
+      const t = tieneMarca(sumarDias(f,-d), marca);
+      if(t === null || t === true) return false;
+    }
+    return true;
+  }).map(metricasDia);
+}
+
+// ¿Empeoró? Frecuencia 40% mayor, o intensidad 1,5 puntos más alta
+function masEpisodiosQue(c, base){ return base.eps > 0 ? c.eps > base.eps*1.4 : c.eps >= 1; }
+function masFuerteQue(c, base){ return c.int !== null && base.int !== null && c.int >= base.int+1.5; }
+
+function celdaMtx(valor, alto){
+  if(valor === null || valor === undefined) return '<div class="mtx-nd">—</div>';
+  return '<div'+(alto ? ' class="mtx-alto"' : '')+'>'+red1(valor)+'</div>';
 }
 
 // Resumen agregado de un bloque de días (para comparar semanas)
@@ -985,8 +961,7 @@ function resumenBloque(fechas){
     epsDia: ms.reduce((s,m) => s+m.episodios,0)/fechas.length,
     intProm: nInt ? ms.reduce((s,m) => s+m.sumaInt,0)/nInt : null,
     minDia: ms.reduce((s,m) => s+m.minutos,0)/fechas.length,
-    diasLimpios: ms.filter(m => m.episodios === 0).length,
-    adherencia: ms.reduce((s,m) => s+m.dosis,0)/(fechas.length*FRANJAS.length)*100
+    diasLimpios: ms.filter(m => m.episodios === 0).length
   };
 }
 
@@ -1004,6 +979,69 @@ function filaComp(titulo, a, b, menosEsMejor, sufijo){
     '<div class="comp-v">'+red1(a)+(sufijo||'')+'</div>'+
     '<div class="comp-fl '+clase+'">'+flecha+'</div>'+
     '<div class="comp-v '+clase+'">'+red1(b)+(sufijo||'')+'</div></div>';
+}
+
+function esPrincipal(clave){
+  return PRINCIPALES.some(p => p.clave === clave);
+}
+
+const NOTA_METODO_CRUCE =
+  '<div class="nota-metodo">Episodios/día = cuántas veces apareció. '+
+  'Intensidad = qué tan fuerte, promediada entre los episodios anotados. '+
+  '"Sin esto" son los días sin la marca ese día ni en los días previos, '+
+  'para que la comparación no se ensucie con el arrastre. '+
+  'Esto muestra coincidencias, no causas: sirve para llevar preguntas al control.</div>';
+
+// Una tarjeta de cruce: la marca contra los días limpios, en frecuencia e intensidad
+function tarjetaCruce(mk, fechas){
+  const maxD = mk.desfases[mk.desfases.length-1];
+  const cols = mk.desfases
+    .map(d => ({desfase:d, st:statsDe(diasConMarca(mk.clave, fechas, d))}))
+    .filter(c => c.st.dias > 0);
+  if(cols.length === 0) return '';
+  const base = statsDe(diasLimpios(mk.clave, fechas, maxD));
+  const diasCon = statsDe(diasConMarca(mk.clave, fechas, 0)).dias;
+
+  let h = '<div class="cruce"><div class="cruce-titulo">'+escapar(mk.titulo)+'</div>';
+  h += '<div class="cruce-n">'+diasCon+' día(s) con esto · '+base.dias+' día(s) limpios de comparación</div>';
+
+  h += '<div class="mtx" style="grid-template-columns:1fr repeat('+(cols.length+1)+',46px)">';
+  h += '<div class="mtx-h"></div>';
+  cols.forEach(c => { h += '<div class="mtx-h">'+ETIQUETA_DESFASE[c.desfase]+'</div>'; });
+  h += '<div class="mtx-h">Sin esto</div>';
+
+  h += '<div class="mtx-l">Episodios/día</div>';
+  cols.forEach(c => { h += celdaMtx(c.st.eps, masEpisodiosQue(c.st, base)); });
+  h += '<div class="mtx-sin">'+red1(base.eps)+'</div>';
+
+  h += '<div class="mtx-l">Intensidad</div>';
+  cols.forEach(c => { h += celdaMtx(c.st.int, masFuerteQue(c.st, base)); });
+  h += (base.int !== null ? '<div class="mtx-sin">'+red1(base.int)+'</div>'
+                          : '<div class="mtx-nd">—</div>');
+  h += '</div>';
+
+  // Veredicto: prudente mientras haya pocos días
+  let texto, sube = false;
+  if(diasCon < 3 || base.dias < 3){
+    texto = 'Todavía son pocos días para decir nada. Sigue marcándolo.';
+  }else{
+    const peores = cols.filter(c => masEpisodiosQue(c.st, base) || masFuerteQue(c.st, base));
+    if(peores.length === 0){
+      texto = 'Por ahora no se ve diferencia clara.';
+    }else{
+      sube = true;
+      const etq = peores.map(c => ETIQUETA_DESFASE[c.desfase].toLowerCase());
+      const cuando = etq.length > 1
+        ? etq.slice(0,-1).join(', ')+' y '+etq[etq.length-1]
+        : etq[0];
+      const soloFuerte = peores.every(c => masFuerteQue(c.st, base) && !masEpisodiosQue(c.st, base));
+      texto = soloFuerte
+        ? 'No aparecen más episodios, pero sí más fuertes: '+cuando+'.'
+        : 'Se nota peor '+cuando+'.';
+    }
+  }
+  h += '<div class="veredicto'+(sube ? ' sube' : '')+'">'+texto+'</div></div>';
+  return h;
 }
 
 function pintarInforme(){
@@ -1024,10 +1062,6 @@ function pintarInforme(){
   const cerrados = todosEps.filter(e => e.fin);
   const promDur = cerrados.length
     ? cerrados.reduce((s,e) => s+(new Date(e.fin)-new Date(e.inicio))/60000,0)/cerrados.length : null;
-  const dosisPos = fechas.length*FRANJAS.length;
-  const dosisHec = metricas.reduce((s,m) => s+m.dosis,0);
-  const extras = metricas.reduce((s,m) => s+m.extras,0);
-  const adherencia = dosisPos > 0 ? Math.round(dosisHec/dosisPos*100) : 0;
 
   let html = '';
 
@@ -1063,12 +1097,36 @@ function pintarInforme(){
     html += filaComp('Intensidad promedio', a.intProm, b.intProm, true, '');
     html += filaComp('Minutos de molestia al día', a.minDia, b.minDia, true, '');
     html += filaComp('Días sin molestia', a.diasLimpios, b.diasLimpios, false, '');
-    html += filaComp('Cumplimiento de dosis', a.adherencia, b.adherencia, false, '%');
-    html += '<div class="nota-metodo">Verde = va en la dirección deseada. '+
-            'Mira el cumplimiento antes de sacar conclusiones: si bajaron las dosis, '+
-            'la comparación no es limpia.</div>';
+    html += '<div class="nota-metodo">Verde = va en la dirección deseada.</div>';
   }
   html += '</div></section>';
+
+  /* ----- menstruación y relaciones: la sección que se mira con el tiempo ----- */
+  html += '<section><h2>Menstruación y relaciones sexuales</h2><div class="tarjeta">';
+  let hayPrincipal = false;
+  PRINCIPALES.forEach(mk => {
+    const t = tarjetaCruce(mk, fechas);
+    if(t){ hayPrincipal = true; html += t; }
+  });
+
+  // Cruce de las dos variables entre sí: los días en que coinciden
+  const ambas = fechas.filter(f => tieneMarca(f, MARCA_SANGRADO) === true &&
+                                   tieneMarca(f, MARCA_SEXO) === true);
+  if(ambas.length > 0){
+    const st = statsDe(ambas.map(metricasDia));
+    html += '<div class="cruce"><div class="cruce-titulo">Las dos el mismo día</div>'+
+            '<div class="cruce-n">'+ambas.length+' día(s)</div>'+
+            '<div class="veredicto">'+red1(st.eps)+' episodios/día'+
+            (st.int !== null ? ' · intensidad '+red1(st.int) : '')+'</div></div>';
+  }
+
+  if(!hayPrincipal){
+    html += '<div class="vacio" style="padding:14px">Marca la menstruación y las relaciones '+
+            'en la pantalla del día.<br>Este cruce necesita semanas, no días: con un ciclo '+
+            'irregular hacen falta al menos dos menstruaciones registradas para que '+
+            'signifique algo.</div>';
+  }
+  html += '</div>'+NOTA_METODO_CRUCE+'</section>';
 
   /* ----- día a día ----- */
   html += '<section><h2>Día a día</h2><div class="tarjeta"><div class="dias">';
@@ -1076,18 +1134,18 @@ function pintarInforme(){
     const ctx = datos.contexto[m.fecha];
     const altura = m.maxInt !== null ? Math.round(m.maxInt/10*90) : (m.episodios > 0 ? 8 : 0);
     const clase = (m.episodios === 0) ? 'dia-relleno cero' : 'dia-relleno';
-    let puntos = '';
-    for(let i = 0; i < FRANJAS.length; i++) puntos += '<div class="pt'+(i < m.dosis ? ' on' : '')+'"></div>';
     const marca = (ctx && ctx.factores && ctx.factores.length) ? '•' : '';
     html += '<div class="dia-col">'+
       '<div class="dia-barra"><div class="'+clase+'" style="height:'+Math.max(altura,4)+'px"></div></div>'+
       '<div class="dia-marca">'+marca+'</div>'+
       '<div class="dia-num">'+m.fecha.slice(8)+'</div>'+
-      '<div class="dia-pts">'+puntos+'</div></div>';
+      '<div class="dia-sang'+((ctx && ctx.sangrado) ? ' on' : '')+'"></div>'+
+      '<div class="dia-sexo'+((ctx && ctx.sexo) ? ' on' : '')+'"></div></div>';
   });
   html += '</div><div class="nota-metodo">La barra es la molestia más fuerte de ese día (0 a 10). '+
-          'Verde claro = día sin molestias. Los cuatro puntitos son las dosis cumplidas. '+
-          'El • indica que ese día marcaste algún factor.</div></div></section>';
+          'Verde claro = día sin molestias. El • marca que ese día anotaste algún factor. '+
+          'Abajo, la línea morada son los días con menstruación y la azul, los días con '+
+          'relaciones sexuales.</div></div></section>';
 
   /* ----- horario ----- */
   const bloques = [{t:'Madrugada (0-6)',d:0,h:6},{t:'Mañana (6-12)',d:6,h:12},
@@ -1103,49 +1161,21 @@ function pintarInforme(){
   const dur = contar(todosEps.filter(e => e.duracionAlivio).map(e => e.duracionAlivio));
   html += '<section><h2>Respuesta a la crema</h2><div class="tarjeta">'+
           barrasHorizontales(dur, 0, true);
-  if(extras > 0){
-    html += '<div class="nota-metodo">Además registraste '+extras+' dosis extra de rescate en el período.</div>';
-  }
   html += '</div></section>';
 
-  /* ----- cruces ----- */
-  html += '<section><h2>Qué pasa después de...</h2><div class="tarjeta">';
+  /* ----- cruces (solo los factores sueltos) ----- */
+  html += '<section><h2>Otros factores</h2><div class="tarjeta">';
   let algunCruce = false;
-  FACTORES.forEach(fa => {
-    const mismo = compararFactor(fa, fechas, 0);
-    const sig   = compararFactor(fa, fechas, 1);
-    if(!mismo && !sig) return;
-    algunCruce = true;
-    const base = mismo || sig;
-    html += '<div class="cruce"><div class="cruce-titulo">'+escapar(fa)+'</div>';
-    html += '<div class="cruce-n">registrado en '+base.nCon+' día(s)</div>';
-    const valores = [];
-    if(mismo) valores.push(mismo.promCon, mismo.promSin);
-    if(sig)   valores.push(sig.promCon, sig.promSin);
-    const maxRef = Math.max.apply(null, valores.concat([0.1]));
-    if(mismo) html += filaComparativa('Mismo día', mismo.promCon, maxRef, mismo.promCon > mismo.promSin);
-    if(sig)   html += filaComparativa('Día después', sig.promCon, maxRef, sig.promCon > sig.promSin);
-    html += filaComparativa('Días sin esto', (mismo ? mismo.promSin : sig.promSin), maxRef, false);
-
-    let texto, sube = false;
-    if(base.nCon < 3 || base.nSin < 3){
-      texto = 'Todavía son pocos días para decir nada. Sigue marcándolo.';
-    }else{
-      const peorMismo = mismo && mismo.promCon > mismo.promSin*1.4;
-      const peorSig   = sig   && sig.promCon   > sig.promSin*1.4;
-      if(peorSig && !peorMismo)      { texto = 'El efecto aparece sobre todo al día siguiente.'; sube = true; }
-      else if(peorMismo && peorSig)  { texto = 'Más molestias el mismo día y también al siguiente.'; sube = true; }
-      else if(peorMismo)             { texto = 'Más molestias el mismo día.'; sube = true; }
-      else                           { texto = 'Por ahora no se ve diferencia clara.'; }
-    }
-    html += '<div class="veredicto'+(sube ? ' sube' : '')+'">'+texto+'</div></div>';
+  MARCADORES.forEach(mk => {
+    if(esPrincipal(mk.clave)) return;      // menstruación y relaciones tienen su propia sección
+    const t = tarjetaCruce(mk, fechas);
+    if(t){ algunCruce = true; html += t; }
   });
   if(!algunCruce){
-    html += '<div class="vacio" style="padding:14px">Marca factores en "¿Qué pasó este día?" '+
+    html += '<div class="vacio" style="padding:14px">Marca cosas en "Otras cosas de este día" '+
             'y aquí vas a ver si se relacionan con las molestias.</div>';
   }
-  html += '</div><div class="nota-metodo">Las cifras son el promedio de episodios por día. '+
-          'Esto muestra coincidencias, no causas: sirve para llevar preguntas al control.</div></section>';
+  html += '</div>'+NOTA_METODO_CRUCE+'</section>';
 
   /* ----- listados ----- */
   const junta = campo => contar([].concat.apply([], todosEps.map(e => e[campo] || [])));
@@ -1155,16 +1185,6 @@ function pintarInforme(){
   html += '<section><h2>Síntomas al orinar</h2><div class="tarjeta">'+barrasHorizontales(junta('urinarios'),0,false)+'</div></section>';
   html += '<section><h2>Qué te impidió hacer</h2><div class="tarjeta">'+barrasHorizontales(junta('impacto'),0,false)+'</div></section>';
   html += '<section><h2>Qué la alivia</h2><div class="tarjeta">'+barrasHorizontales(junta('alivio'),0,true)+'</div></section>';
-
-  /* ----- tratamiento ----- */
-  const escozores = fechas.map(fe => datos.contexto[fe]).filter(c => c && c.escozor && c.escozor !== 'No').length;
-  html += '<section><h2>Cumplimiento del tratamiento</h2><div class="tarjeta">';
-  html += '<div class="hbarra"><div class="hbarra-top"><b>Dosis aplicadas</b><span>'+
-          dosisHec+' de '+dosisPos+'</span></div>'+
-          '<div class="hbarra-riel"><div class="hbarra-fill v" style="width:'+adherencia+'%"></div></div></div>';
-  html += '<div class="nota-metodo" style="margin-top:2px">'+adherencia+'% de las dosis del período'+
-          (escozores > 0 ? ' · escozor al aplicar en '+escozores+' día(s)' : '')+'.</div>';
-  html += '</div></section>';
 
   html += '<section><button class="btn-linea" onclick="copiarResumen()">'+
           'Copiar resumen para el control<small>Texto listo para leer o enviar al médico</small></button>'+
@@ -1203,10 +1223,7 @@ function copiarResumen(){
   t += 'Días sin molestia: '+metricas.filter(m => m.episodios === 0).length+'\n';
   t += 'Intensidad promedio: '+(promInt !== null ? red1(promInt)+'/10' : 'sin dato')+'\n';
   t += 'Duración promedio: '+(promDur !== null ? duracionTexto(promDur*60000) : 'sin dato')+'\n';
-  t += 'Dosis aplicadas: '+metricas.reduce((s,m)=>s+m.dosis,0)+' de '+(fechas.length*FRANJAS.length);
-  const ex = metricas.reduce((s,m)=>s+m.extras,0);
-  if(ex) t += ' (+'+ex+' extra de rescate)';
-  t += '\n\n';
+  t += '\n';
 
   const dur = contar(eps.filter(e => e.duracionAlivio).map(e => e.duracionAlivio));
   if(dur.length) t += 'Respuesta a la crema: '+dur.map(d => d.clave+' ('+d.n+')').join(', ')+'\n';
@@ -1221,6 +1238,25 @@ function copiarResumen(){
   const imp = junta('impacto');
   if(imp.length) t += 'Impacto: '+imp.slice(0,3).map(i => i.clave+' ('+i.n+')').join(', ')+'\n';
 
+  // Cruces con sangrado y relaciones sexuales (lo que más le sirve al médico)
+  let lineasCruce = '';
+  PRINCIPALES.forEach(mk => {
+    const maxD = mk.desfases[mk.desfases.length-1];
+    const base = statsDe(diasLimpios(mk.clave, fechas, maxD));
+    const partes = [];
+    mk.desfases.forEach(d => {
+      const st = statsDe(diasConMarca(mk.clave, fechas, d));
+      if(st.dias === 0) return;
+      partes.push('  '+ETIQUETA_DESFASE[d]+' (n='+st.dias+'): '+red1(st.eps)+' episodios/día'+
+                  (st.int !== null ? ', intensidad '+red1(st.int) : ''));
+    });
+    if(partes.length === 0) return;
+    lineasCruce += mk.titulo+':\n'+partes.join('\n')+'\n'+
+      '  Días sin esto (n='+base.dias+'): '+red1(base.eps)+' episodios/día'+
+      (base.int !== null ? ', intensidad '+red1(base.int) : '')+'\n';
+  });
+  if(lineasCruce) t += '\nCruces:\n'+lineasCruce;
+
   // Comparación semanal si hay material
   const todas = [];
   let f = datos.config.inicio, g = 0;
@@ -1232,7 +1268,6 @@ function copiarResumen(){
     if(a.intProm !== null && b.intProm !== null)
       t += '  Intensidad: '+red1(a.intProm)+' → '+red1(b.intProm)+'\n';
     t += '  Minutos/día: '+red1(a.minDia)+' → '+red1(b.minDia)+'\n';
-    t += '  Cumplimiento: '+Math.round(a.adherencia)+'% → '+Math.round(b.adherencia)+'%\n';
   }
 
   t += '\nDetalle por día:\n';
@@ -1241,11 +1276,9 @@ function copiarResumen(){
     let l = m.fecha+': '+m.episodios+' episodio(s)';
     if(m.maxInt !== null) l += ', máx '+m.maxInt+'/10';
     if(m.minutos > 0) l += ', '+m.minutos+' min';
-    l += ', '+m.dosis+'/4 dosis';
-    if(m.extras) l += ' +'+m.extras+' extra';
     if(ctx && ctx.factores && ctx.factores.length) l += ' — '+ctx.factores.join(', ');
     if(ctx && ctx.sangrado) l += ' — sangrado '+ctx.sangrado.toLowerCase();
-    if(ctx && ctx.escozor && ctx.escozor !== 'No') l += ' — escozor al aplicar ('+ctx.escozor+')';
+    if(ctx && ctx.sexo) l += ' — relaciones ('+ctx.sexo.toLowerCase()+')';
     t += l+'\n';
   });
 
@@ -1311,6 +1344,7 @@ function importar(ev){
       datos = p;
       if(!datos.dosis) datos.dosis = {};
       if(!datos.contexto) datos.contexto = {};
+      migrarContexto();
       if(guardar()){ cargarAjustes(); pintarTodo(); toast('Respaldo restaurado.'); }
     }catch(e){
       toast('No se pudo leer el archivo: está dañado o no es un respaldo.', true);
