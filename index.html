@@ -75,6 +75,9 @@ h2{font-size:13px;font-weight:650;text-transform:uppercase;letter-spacing:.7px;
 .vacio{text-align:center;padding:26px 16px;color:var(--texto-suave);font-size:14.5px;line-height:1.6}
 .vacio span{font-size:26px;display:block;margin-bottom:8px}
 
+.racha{font-size:12.5px;color:var(--sangre);margin-top:11px;font-weight:600}
+.btn-tranquilo-on{background:var(--verde-claro) !important;border:1px solid var(--verde) !important;
+  color:var(--verde) !important;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{border:1px solid var(--borde);background:var(--superficie);border-radius:20px;
   padding:9px 14px;font-size:14px;color:var(--texto);cursor:pointer}
@@ -230,9 +233,11 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
       <h2>Menstruación</h2>
       <div class="tarjeta">
         <div class="ayuda" style="margin-top:0">
-          Marca cualquier sangrado, aunque sea poco. No hace falta saber en qué día del ciclo vas.
+          Marca cualquier sangrado, aunque sea poco, cada día que lo tengas.
+          No hace falta saber en qué día del ciclo vas.
         </div>
         <div class="chips" id="menstruacionHoy"></div>
+        <div class="racha oculto" id="rachaSangrado"></div>
       </div>
     </section>
 
@@ -240,7 +245,9 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
       <h2>Relaciones sexuales</h2>
       <div class="tarjeta">
         <div class="ayuda" style="margin-top:0">
-          Si hubo, marca cómo fue. Si no hubo, no marques nada.
+          Marca solo cómo fue <b>en el momento</b>. Si no hubo, no marques nada.
+          El ardor que llega al día siguiente no va aquí: ese se registra como
+          episodio el día que aparece, y la app cruza las dos cosas sola.
         </div>
         <div class="chips" id="sexoHoy"></div>
       </div>
@@ -253,6 +260,13 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
           Marca lo que aplique. Esto se cruza con las molestias del mismo día y del día siguiente.
         </div>
         <div class="chips" id="factoresHoy"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="tarjeta">
+        <button class="secundario" id="btnTranquilo" style="margin-top:0" onclick="alternarTranquilo()"></button>
+        <div class="ayuda" id="ayudaTranquilo" style="margin:10px 0 0"></div>
       </div>
     </section>
   </div>
@@ -338,6 +352,12 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
     </div>
 
     <div class="campo">
+      <label>¿Al orinar?</label>
+      <div class="ayuda">Puedes marcar varias.</div>
+      <div class="chips" id="fUrinarios"></div>
+    </div>
+
+    <div class="campo">
       <label>¿Apareció sola o después de algo?</label>
       <div class="chips" id="fOrigen"></div>
     </div>
@@ -361,11 +381,7 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
     </div>
 
     <div class="separador">
-      <div class="separador-t">Otros síntomas e impacto</div>
-      <div class="campo">
-        <label>¿Síntomas al orinar?</label>
-        <div class="chips" id="fUrinarios"></div>
-      </div>
+      <div class="separador-t">Impacto</div>
       <div class="campo" style="margin-bottom:0">
         <label>¿Te impidió hacer algo?</label>
         <div class="chips" id="fImpacto"></div>
@@ -403,7 +419,8 @@ const LOCALIZACION = ['Lado izquierdo','Lado derecho','Ambos lados','Entrada','Z
 const GATILLANTES  = ['Estar sentada','Ropa ajustada','Orinar','Ejercicio','Actividad sexual','Jabón o producto','Otro'];
 const ALIVIOS      = ['Se pasó sola','Después de la crema','Calor','Acostarme','Cambiar de ropa','Nada la alivió'];
 const DUR_ALIVIO   = ['No me alivió','Menos de 1 hora','1 a 2 horas','Más de 2 horas','No me apliqué'];
-const URINARIOS    = ['Ardor al orinar','Más ganas de orinar','Sin síntomas urinarios'];
+const URINARIOS    = ['Presión o ganas de hacer pipí','Ardor al orinar','Escozor al orinar',
+                      'Molestia después de orinar','Tengo que ir muy seguido','Sin síntomas urinarios'];
 const IMPACTO      = ['Trabajar o concentrarme','Dormir','Estar sentada','Salir','No me impidió nada'];
 
 const FACTORES = ['Muchas horas sentada','Ropa ajustada','Ejercicio',
@@ -412,7 +429,7 @@ const FACTORES = ['Muchas horas sentada','Ropa ajustada','Ejercicio',
 // Menstruación y relaciones sexuales son variables propias, con su propio
 // registro en la pantalla del día y su propia sección en el informe.
 const SANGRADOS = ['Manchado','Leve','Moderado','Abundante'];
-const SEXO      = ['Sin dolor','Dolor durante','Dolor después','Dolor durante y después','Sin detalle'];
+const SEXO      = ['Sí, sin molestia en el momento','Sí, con molestia en el momento','Sin detalle'];
 
 const MARCA_SANGRADO = '__sangrado__';
 const MARCA_SEXO     = '__sexo__';
@@ -452,6 +469,7 @@ function cargar(){
     if(!datos.dosis)    datos.dosis    = {};
     if(!datos.contexto) datos.contexto = {};
     migrarContexto();
+    refrescarIndiceEpisodios();
   }catch(e){
     datos = estructuraInicial();
     toast('No se pudo leer el registro guardado. Empezamos uno nuevo; si tienes respaldo, restáuralo desde Ajustes.', true);
@@ -464,7 +482,17 @@ function migrarContexto(){
   let cambios = 0;
   Object.keys(datos.contexto || {}).forEach(f => {
     const c = datos.contexto[f];
-    if(!c || !Array.isArray(c.factores)) return;
+    if(!c) return;
+    // La etiqueta "Dolor después" era ambigua; ahora dice de qué día habla
+    const sexoViejo = {
+      'Sin dolor':                   'Sí, sin molestia en el momento',
+      'Dolor durante':               'Sí, con molestia en el momento',
+      'Dolor después':               'Sin detalle',   // era ambiguo: no inventamos cuándo dolió
+      'Dolor el mismo día, después': 'Sí, sin molestia en el momento',
+      'Dolor durante y después':     'Sí, con molestia en el momento'
+    };
+    if(c.sexo && sexoViejo[c.sexo]){ c.sexo = sexoViejo[c.sexo]; cambios++; }
+    if(!Array.isArray(c.factores)) return;
     const i = c.factores.indexOf('Relaciones sexuales');
     if(i === -1) return;
     c.factores.splice(i, 1);
@@ -475,8 +503,15 @@ function migrarContexto(){
   return cambios;
 }
 
+// Días que tienen al menos un episodio. Se rehace en cada guardado para que
+// el informe no tenga que recorrer todos los episodios una y otra vez.
+let fechasConEpisodio = new Set();
+function refrescarIndiceEpisodios(){
+  fechasConEpisodio = new Set((datos.episodios || []).map(e => fechaDe(e.inicio)));
+}
+
 function guardar(){
-  try{ localStorage.setItem(CLAVE, JSON.stringify(datos)); return true; }
+  try{ localStorage.setItem(CLAVE, JSON.stringify(datos)); refrescarIndiceEpisodios(); return true; }
   catch(e){
     toast('No se pudo guardar en este teléfono. Descarga un respaldo desde Ajustes antes de cerrar la app.', true);
     return false;
@@ -649,7 +684,7 @@ function pintarEpisodios(){
 }
 
 function ctxDe(fecha){
-  if(!datos.contexto[fecha]) datos.contexto[fecha] = {factores:[], sangrado:null, sexo:null};
+  if(!datos.contexto[fecha]) datos.contexto[fecha] = {factores:[], sangrado:null, sexo:null, tranquilo:false};
   if(!datos.contexto[fecha].factores) datos.contexto[fecha].factores = [];
   return datos.contexto[fecha];
 }
@@ -666,6 +701,7 @@ function chipsUnicos(contenedorId, opciones, campo, clase){
     if(c[campo] === op) b.classList.add('sel');
     b.onclick = () => {
       c[campo] = (c[campo] === op) ? null : op;   // volver a tocar lo desmarca
+      if(c[campo]) c.tranquilo = false;           // si pasó algo, el día no fue tranquilo
       if(guardar()) pintarFactores();
     };
     cont.appendChild(b);
@@ -687,11 +723,61 @@ function pintarFactores(){
     if(c.factores.indexOf(f) !== -1) b.classList.add('sel');
     b.onclick = () => {
       const i = c.factores.indexOf(f);
-      if(i === -1) c.factores.push(f); else c.factores.splice(i,1);
+      if(i === -1){ c.factores.push(f); c.tranquilo = false; } else c.factores.splice(i,1);
       if(guardar()) pintarFactores();
     };
     cf.appendChild(b);
   });
+
+  pintarRachaSangrado();
+  pintarTranquilo();
+}
+
+// "Día 3 de sangrado seguido": confirma que la regla se está registrando como bloque
+function pintarRachaSangrado(){
+  const el = document.getElementById('rachaSangrado');
+  if(!ctxDe(fechaActiva).sangrado){ el.classList.add('oculto'); return; }
+  let n = 0, f = fechaActiva;
+  while(n < 30){
+    const c = datos.contexto[f];
+    if(!c || !c.sangrado) break;
+    n++;
+    f = sumarDias(f, -1);
+  }
+  el.classList.remove('oculto');
+  el.textContent = n === 1 ? 'Primer día con sangrado'
+                           : 'Día ' + n + ' de sangrado seguido';
+}
+
+// Confirmar un día en que no hubo nada que marcar, para que cuente de comparación
+function pintarTranquilo(){
+  const c = ctxDe(fechaActiva);
+  const btn = document.getElementById('btnTranquilo');
+  const ayuda = document.getElementById('ayudaTranquilo');
+  const hayMarcas = !!(c.sangrado || c.sexo || c.factores.length);
+
+  if(hayMarcas){
+    btn.classList.add('oculto');
+    ayuda.textContent = 'Este día ya quedó registrado.';
+    return;
+  }
+  btn.classList.remove('oculto');
+  if(c.tranquilo){
+    btn.classList.add('btn-tranquilo-on');
+    btn.textContent = '✓ Día registrado · sin regla ni relaciones';
+    ayuda.textContent = 'Vuelve a tocarlo si necesitas deshacerlo.';
+  }else{
+    btn.classList.remove('btn-tranquilo-on');
+    btn.textContent = 'Este día no hubo nada que marcar';
+    ayuda.textContent = 'Tócalo los días sin regla ni relaciones. Así ese día entra '+
+      'como comparación en el informe; si queda en blanco, se deja fuera.';
+  }
+}
+
+function alternarTranquilo(){
+  const c = ctxDe(fechaActiva);
+  c.tranquilo = !c.tranquilo;
+  if(guardar()) pintarFactores();
 }
 
 function pintarTodo(){
@@ -904,10 +990,22 @@ function barrasHorizontales(items, total, verde){
   return html;
 }
 
-// ¿Ese día tenía la marca? null = día sin ningún registro (no cuenta en el cruce)
-function tieneMarca(fecha, marca){
+// ¿Ese día quedó registrado? Un día cuenta si pasó algo anotado (regla,
+// relaciones, un factor, un episodio) o si lo marcaste como día tranquilo.
+// Los días en blanco quedan fuera: no sabemos si no pasó nada o si se te olvidó.
+function diaRegistrado(fecha){
+  if(fechasConEpisodio.has(fecha)) return true;
   const ctx = datos.contexto[fecha];
-  if(!ctx) return null;
+  if(!ctx) return false;
+  return !!(ctx.sangrado || ctx.sexo || ctx.tranquilo ||
+            (ctx.factores && ctx.factores.length));
+}
+
+// ¿Ese día tenía la marca? null = día sin registro (no cuenta en el cruce)
+function tieneMarca(fecha, marca){
+  if(!diaRegistrado(fecha)) return null;
+  const ctx = datos.contexto[fecha];
+  if(!ctx) return false;
   if(marca === MARCA_SANGRADO) return !!ctx.sangrado;
   if(marca === MARCA_SEXO)     return !!ctx.sexo;
   return (ctx.factores || []).indexOf(marca) !== -1;
@@ -1126,7 +1224,16 @@ function pintarInforme(){
             'irregular hacen falta al menos dos menstruaciones registradas para que '+
             'signifique algo.</div>';
   }
-  html += '</div>'+NOTA_METODO_CRUCE+'</section>';
+  html += '</div>';
+
+  // Los días en blanco no entran en ninguna comparación: conviene saber cuántos son
+  const enBlanco = fechas.filter(f => !diaRegistrado(f));
+  if(enBlanco.length > 0){
+    html += '<div class="nota-metodo"><b>'+enBlanco.length+' día(s) del período quedaron en '+
+            'blanco</b> y están fuera de todas las comparaciones. Complétalos con la flecha ‹ '+
+            'o márcalos como días sin nada que anotar.</div>';
+  }
+  html += NOTA_METODO_CRUCE+'</section>';
 
   /* ----- día a día ----- */
   html += '<section><h2>Día a día</h2><div class="tarjeta"><div class="dias">';
