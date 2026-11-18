@@ -31,7 +31,7 @@ header{padding:calc(env(safe-area-inset-top) + 16px) 16px 12px;background:var(--
   border-radius:10px;color:var(--texto);font-size:17px;cursor:pointer;padding:0}
 .h-flecha:disabled{opacity:.3}
 .h-centro{flex:1;text-align:center;min-width:0}
-.h-titulo{font-size:17px;font-weight:650;text-transform:capitalize;line-height:1.25}
+.h-titulo{font-size:17px;font-weight:650;line-height:1.25}
 .h-dia{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:1px}
 .h-hoy{background:none;border:none;color:var(--acento);font-size:12.5px;
   font-weight:600;cursor:pointer;padding:2px}
@@ -134,6 +134,48 @@ textarea{min-height:76px;resize:vertical}
 .rango button{flex:1;padding:10px 4px;border:1px solid var(--borde);background:var(--superficie);
   border-radius:10px;font-size:13.5px;color:var(--texto-suave);cursor:pointer}
 .rango button.sel{background:var(--acento);color:#fff;border-color:var(--acento);font-weight:600}
+/* titular del informe */
+.titular{border-radius:var(--radio);padding:18px;border:1px solid var(--borde);
+  background:var(--superficie);box-shadow:var(--sombra)}
+.titular.bien{background:var(--verde-claro);border-color:var(--verde)}
+.titular.mal{background:var(--acento-claro);border-color:var(--acento)}
+.tit-t{font-size:19px;font-weight:650;line-height:1.3}
+.titular.bien .tit-t{color:var(--verde)}
+.titular.mal .tit-t{color:var(--acento)}
+.tit-s{font-size:13.5px;color:var(--texto-suave);margin-top:5px;line-height:1.45}
+.titular.bien .tit-s,.titular.mal .tit-s{color:inherit;opacity:.85}
+
+/* filas de "qué te lo empeora" */
+.sig{padding:14px 0;border-bottom:1px solid var(--borde)}
+.sig:first-child{padding-top:2px}
+.sig:last-child{border-bottom:none;padding-bottom:2px}
+.sig-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sig-top b{font-size:16px;font-weight:650}
+.sig-top span{font-size:12px;color:var(--texto-suave);flex-shrink:0}
+.sig-que{font-size:14.5px;color:var(--acento);font-weight:600;margin-top:3px}
+.sig-vs{font-size:13px;color:var(--texto-suave);margin-top:3px;line-height:1.45}
+.desplegable.mini{margin-top:9px}
+.desplegable.mini summary{padding:9px 12px;font-size:12.5px}
+
+/* perfil de los episodios */
+.perfil{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--borde);
+  align-items:baseline}
+.perfil:last-of-type{border-bottom:none}
+.perfil-t{width:104px;flex-shrink:0;font-size:12.5px;color:var(--texto-suave)}
+.perfil-v{flex:1;font-size:13.5px;line-height:1.5}
+.perfil-v em{font-style:normal;color:var(--texto-suave);font-size:12px}
+
+/* leyenda del día a día */
+.leyenda{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;
+  font-size:11.5px;color:var(--texto-suave)}
+.leyenda span{display:inline-flex;align-items:center;gap:5px}
+.leyenda i{width:11px;height:7px;border-radius:2px;flex-shrink:0}
+.lg-barra{background:var(--acento)}
+.lg-cero{background:var(--verde-claro);border:1px solid var(--verde)}
+.lg-sang{background:var(--sangre);height:4px}
+.lg-sexo{background:var(--sexo);height:4px}
+.lg-fondo{background:var(--acento);opacity:.45}
+
 .cifras{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .cifra{background:var(--superficie);border:1px solid var(--borde);border-radius:13px;padding:13px}
 .cifra-n{font-size:25px;font-weight:650;line-height:1.15;font-variant-numeric:tabular-nums}
@@ -214,6 +256,10 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
   transform:translateY(12px);transition:all .25s ease;pointer-events:none;line-height:1.45}
 #toast.ver{opacity:1;transform:translateY(0)}
 #toast.error{background:var(--alerta)}
+#toast.ok{background:var(--verde)}
+.h-estado{font-size:12px;margin-top:3px;font-weight:600}
+.h-estado.si{color:var(--verde)}
+.h-estado.no{color:var(--texto-suave)}
 .oculto{display:none !important}
 .pie{text-align:center;font-size:12px;color:var(--texto-suave);margin-top:26px;line-height:1.6}
 </style>
@@ -226,6 +272,7 @@ nav button span{display:block;font-size:19px;margin-bottom:2px}
     <div class="h-centro">
       <div class="h-titulo" id="tituloVista">Bitácora</div>
       <div class="h-dia" id="contadorDia"></div>
+      <div class="h-estado" id="estadoDia"></div>
       <button class="h-hoy oculto" id="btnVolverHoy" onclick="irAFecha(hoyISO())">volver a hoy</button>
     </div>
     <button class="h-flecha" id="flechaAdelante" onclick="cambiarDia(1)">›</button>
@@ -667,13 +714,23 @@ function pintarEncabezado(){
   if(esHoy()) titulo = 'Hoy · '+d.toLocaleDateString('es-CL',{day:'numeric', month:'long'});
   else if(fechaActiva === sumarDias(hoyISO(),-1))
     titulo = 'Ayer · '+d.toLocaleDateString('es-CL',{day:'numeric', month:'long'});
-  document.getElementById('tituloVista').textContent = titulo;
+  document.getElementById('tituloVista').textContent =
+    titulo.charAt(0).toUpperCase() + titulo.slice(1);
 
   const n = numeroDeDia(fechaActiva);
   const cont = document.getElementById('contadorDia');
   if(n < 1)        cont.textContent = 'antes del tratamiento';
   else if(n <= 14) cont.textContent = 'Día '+n+' de 14';
   else             cont.textContent = 'Día '+n+' · seguimiento';
+
+  const est = document.getElementById('estadoDia');
+  if(diaRegistrado(fechaActiva)){
+    est.className = 'h-estado si';
+    est.textContent = '✓ Día registrado';
+  }else{
+    est.className = 'h-estado no';
+    est.textContent = 'Sin registrar';
+  }
 
   document.getElementById('flechaAdelante').disabled = esHoy();
   document.getElementById('btnVolverHoy').classList.toggle('oculto', esHoy());
@@ -809,7 +866,7 @@ function chipsUnicos(contenedorId, opciones, campo, clase){
     b.onclick = () => {
       c[campo] = (c[campo] === op) ? null : op;   // volver a tocar lo desmarca
       if(c[campo]) c.tranquilo = false;           // si pasó algo, el día no fue tranquilo
-      if(guardar()) pintarFactores();
+      if(guardar()){ pintarFactores(); avisarGuardado(); }
     };
     cont.appendChild(b);
   });
@@ -828,7 +885,7 @@ function chipsMultiples(contenedorId, opciones, campo){
     b.onclick = () => {
       const i = c[campo].indexOf(op);
       if(i === -1){ c[campo].push(op); c.tranquilo = false; } else c[campo].splice(i,1);
-      if(guardar()) pintarFactores();
+      if(guardar()){ pintarFactores(); avisarGuardado(); }
     };
     cont.appendChild(b);
   });
@@ -848,7 +905,7 @@ function pintarFondo(){
     b.onclick = () => {
       c.fondo = (c.fondo === op.v) ? null : op.v;   // volver a tocar lo desmarca
       if(c.fondo !== null && c.fondo > 0) c.tranquilo = false;
-      if(guardar()) pintarFactores();
+      if(guardar()){ pintarFactores(); avisarGuardado(); }
     };
     cont.appendChild(b);
   });
@@ -862,6 +919,7 @@ function pintarFactores(){
   pintarFondo();
   pintarRachaSangrado();
   pintarTranquilo();
+  pintarEncabezado();
 }
 
 // "Día 3 de sangrado seguido": confirma que la regla se está registrando como bloque
@@ -909,7 +967,7 @@ function pintarTranquilo(){
 function alternarTranquilo(){
   const c = ctxDe(fechaActiva);
   c.tranquilo = !c.tranquilo;
-  if(guardar()) pintarFactores();
+  if(guardar()){ pintarFactores(); avisarGuardado(); }
 }
 
 function pintarTodo(){
@@ -1211,7 +1269,7 @@ function resumenBloque(fechas){
   };
 }
 
-function filaComp(titulo, a, b, menosEsMejor, sufijo){
+function filaComp(titulo, a, b, menosEsMejor, sufijo, entero){
   if(a === null || b === null) return '';
   const dif = b-a;
   let clase = 'igual', flecha = '=';
@@ -1221,41 +1279,84 @@ function filaComp(titulo, a, b, menosEsMejor, sufijo){
     clase = mejora ? 'mejor' : 'peor';
     flecha = dif < 0 ? '↓' : '↑';
   }
+  const fmt = v => entero ? String(Math.round(v)) : red1(v);
   return '<div class="comp"><div class="comp-t">'+titulo+'</div>'+
-    '<div class="comp-v">'+red1(a)+(sufijo||'')+'</div>'+
+    '<div class="comp-v">'+fmt(a)+(sufijo||'')+'</div>'+
     '<div class="comp-fl '+clase+'">'+flecha+'</div>'+
-    '<div class="comp-v '+clase+'">'+red1(b)+(sufijo||'')+'</div></div>';
+    '<div class="comp-v '+clase+'">'+fmt(b)+(sufijo||'')+'</div></div>';
 }
 
-function esConsumo(clave){
-  return CONSUMOS.some(c => c.clave === clave);
+function plural(n, sing, plu){ return n+' '+(n === 1 ? sing : plu); }
+function textoEps(n){ return red1(n)+' '+(Math.abs(n-1) < 0.05 ? 'episodio' : 'episodios')+'/día'; }
+
+// Compara dos bloques de semana y dice en una frase cómo va
+function veredictoSemanal(a, b){
+  let mejor = 0, peor = 0;
+  const cmp = (x,y,menosEsMejor) => {
+    if(x === null || y === null) return;
+    const dif = y-x, umbral = Math.abs(x)*0.1;
+    if(Math.abs(dif) <= umbral || Math.abs(dif) < 0.05) return;
+    if(menosEsMejor ? dif < 0 : dif > 0) mejor++; else peor++;
+  };
+  cmp(a.epsDia, b.epsDia, true);
+  cmp(a.intProm, b.intProm, true);
+  cmp(a.minDia, b.minDia, true);
+  cmp(a.fondo, b.fondo, true);
+  cmp(a.diasLimpios, b.diasLimpios, false);
+  if(mejor > peor) return {texto:'Vas mejor que la primera semana', clase:'bien'};
+  if(peor > mejor) return {texto:'Vas peor que la primera semana', clase:'mal'};
+  return {texto:'Vas más o menos igual que la primera semana', clase:'neutro'};
 }
 
-function esPrincipal(clave){
-  return PRINCIPALES.some(p => p.clave === clave);
+// Reúne cada marcador con su comparación y qué tan lejos queda de los días limpios
+function senales(fechas){
+  const out = [];
+  MARCADORES.forEach(mk => {
+    const maxD = mk.desfases[mk.desfases.length-1];
+    const cols = mk.desfases
+      .map(d => ({desfase:d, st:statsDe(diasConMarca(mk.clave, fechas, d))}))
+      .filter(c => c.st.dias > 0);
+    if(cols.length === 0) return;
+    const base = statsDe(diasLimpios(mk.clave, fechas, maxD));
+    const diasCon = statsDe(diasConMarca(mk.clave, fechas, 0)).dias;
+    const peores = cols.filter(c => masEpisodiosQue(c.st, base) ||
+                                    masFuerteQue(c.st, base) ||
+                                    masFondoQue(c.st, base));
+    // Fuerza = lo más lejos que se va de los días sin la marca, en cualquiera
+    // de las tres medidas. Solo sirve para ordenar la lista.
+    let fuerza = 0;
+    peores.forEach(c => {
+      const re = base.eps > 0 ? (c.st.eps/base.eps - 1) : (c.st.eps > 0 ? 1 : 0);
+      const rf = (c.st.fondo !== null && base.fondo !== null) ? (c.st.fondo - base.fondo) : 0;
+      const ri = (c.st.int !== null && base.int !== null) ? (c.st.int - base.int)/5 : 0;
+      fuerza = Math.max(fuerza, re, rf, ri);
+    });
+    out.push({mk:mk, cols:cols, base:base, diasCon:diasCon, peores:peores,
+              suficiente: (diasCon >= 3 && base.dias >= 3), fuerza:fuerza});
+  });
+  return out.sort((a,b) => b.fuerza - a.fuerza);
 }
 
-const NOTA_METODO_CRUCE =
-  '<div class="nota-metodo">Episodios/día = cuántas veces apareció. '+
-  'Intensidad = qué tan fuerte, promediada entre los episodios anotados. '+
-  '"Sin esto" son los días sin la marca ese día ni en los días previos, '+
-  'para que la comparación no se ensucie con el arrastre. '+
-  'Esto muestra coincidencias, no causas: sirve para llevar preguntas al control.</div>';
+// La diferencia más marcada, dicha en palabras
+function fraseContraste(c, base){
+  if(masEpisodiosQue(c, base))
+    return textoEps(c.eps).replace('/día',' al día')+', contra '+red1(base.eps)+' los días sin esto';
+  if(masFondoQue(c, base))
+    return 'fondo '+red1(c.fondo)+' de 3, contra '+red1(base.fondo)+' los días sin esto';
+  if(masFuerteQue(c, base))
+    return 'intensidad '+red1(c.int)+', contra '+red1(base.int)+' los días sin esto';
+  return '';
+}
 
-// Una tarjeta de cruce: la marca contra los días limpios, en frecuencia e intensidad
-function tarjetaCruce(mk, fechas){
-  const maxD = mk.desfases[mk.desfases.length-1];
-  const cols = mk.desfases
-    .map(d => ({desfase:d, st:statsDe(diasConMarca(mk.clave, fechas, d))}))
-    .filter(c => c.st.dias > 0);
-  if(cols.length === 0) return '';
-  const base = statsDe(diasLimpios(mk.clave, fechas, maxD));
-  const diasCon = statsDe(diasConMarca(mk.clave, fechas, 0)).dias;
+function cuandoTexto(peores){
+  const etq = peores.map(c => ETIQUETA_DESFASE[c.desfase].toLowerCase());
+  return etq.length > 1 ? etq.slice(0,-1).join(', ')+' y '+etq[etq.length-1] : etq[0];
+}
 
-  let h = '<div class="cruce"><div class="cruce-titulo">'+escapar(mk.titulo)+'</div>';
-  h += '<div class="cruce-n">'+diasCon+' día(s) con esto · '+base.dias+' día(s) limpios de comparación</div>';
-
-  h += '<div class="mtx" style="grid-template-columns:1fr repeat('+(cols.length+1)+',46px)">';
+// Tabla de números de un marcador, para quien quiera mirar el detalle
+function tablaCruce(sig){
+  const cols = sig.cols, base = sig.base;
+  let h = '<div class="mtx" style="grid-template-columns:1fr repeat('+(cols.length+1)+',46px)">';
   h += '<div class="mtx-h"></div>';
   cols.forEach(c => { h += '<div class="mtx-h">'+ETIQUETA_DESFASE[c.desfase]+'</div>'; });
   h += '<div class="mtx-h">Sin esto</div>';
@@ -1274,31 +1375,24 @@ function tarjetaCruce(mk, fechas){
   h += (base.fondo !== null ? '<div class="mtx-sin">'+red1(base.fondo)+'</div>'
                             : '<div class="mtx-nd">—</div>');
   h += '</div>';
+  return h;
+}
 
-  // Veredicto: prudente mientras haya pocos días
-  let texto, sube = false;
-  if(diasCon < 3 || base.dias < 3){
-    texto = 'Todavía son pocos días para decir nada. Sigue marcándolo.';
-  }else{
-    const peores = cols.filter(c => masEpisodiosQue(c.st, base) || masFuerteQue(c.st, base) ||
-                                    masFondoQue(c.st, base));
-    if(peores.length === 0){
-      texto = 'Por ahora no se ve diferencia clara.';
-    }else{
-      sube = true;
-      const etq = peores.map(c => ETIQUETA_DESFASE[c.desfase].toLowerCase());
-      const cuando = etq.length > 1
-        ? etq.slice(0,-1).join(', ')+' y '+etq[etq.length-1]
-        : etq[0];
-      const soloFondo = peores.every(c => masFondoQue(c.st, base) &&
-                                           !masEpisodiosQue(c.st, base) && !masFuerteQue(c.st, base));
-      const soloFuerte = peores.every(c => masFuerteQue(c.st, base) && !masEpisodiosQue(c.st, base));
-      if(soloFondo)        texto = 'No aparecen más episodios, pero el fondo queda más sensible: '+cuando+'.';
-      else if(soloFuerte)  texto = 'No aparecen más episodios, pero sí más fuertes: '+cuando+'.';
-      else                 texto = 'Se nota peor '+cuando+'.';
-    }
-  }
-  h += '<div class="veredicto'+(sube ? ' sube' : '')+'">'+texto+'</div></div>';
+// Una fila de la lista "qué te lo empeora"
+function filaSenal(sig){
+  const peor = sig.peores.slice().sort((a,b) => {
+    const v = x => (x.st.fondo || 0) + x.st.eps;
+    return v(b) - v(a);
+  })[0];
+  let h = '<div class="sig">';
+  h += '<div class="sig-top"><b>'+escapar(sig.mk.titulo)+'</b>'+
+       '<span>'+plural(sig.diasCon,'día','días')+'</span></div>';
+  h += '<div class="sig-que">Peor '+cuandoTexto(sig.peores)+'</div>';
+  const f = fraseContraste(peor.st, sig.base);
+  if(f) h += '<div class="sig-vs">'+f+'</div>';
+  h += '<details class="desplegable mini"><summary>Ver los números</summary>'+
+       '<div class="ox">'+tablaCruce(sig)+'</div></details>';
+  h += '</div>';
   return h;
 }
 
@@ -1321,11 +1415,74 @@ function pintarInforme(){
   const promDur = cerrados.length
     ? cerrados.reduce((s,e) => s+(new Date(e.fin)-new Date(e.inicio))/60000,0)/cerrados.length : null;
 
+  // Bloques completos de semana, desde el inicio del tratamiento
+  const todas = [];
+  let f = datos.config.inicio, g = 0;
+  while(f <= hoyISO() && g < 400){ todas.push(f); f = sumarDias(f,1); g++; }
+  const haySemanas = todas.length >= 8;
+  const sem1 = haySemanas ? resumenBloque(todas.slice(0,7)) : null;
+  const sem2 = haySemanas ? resumenBloque(todas.slice(7,14)) : null;
+
+  const sigs = senales(fechas);
+  let conSenal = sigs.filter(s => s.suficiente && s.peores.length > 0);
+  // Si ya aparece un consumo concreto, el agregado "Algún irritante" solo repite
+  const hayConcreto = conSenal.some(s => IRRITANTES.indexOf(s.mk.clave) !== -1);
+  if(hayConcreto) conSenal = conSenal.filter(s => s.mk.clave !== MARCA_IRRITANTE);
+  const sinSenal = sigs.filter(s => s.suficiente && s.peores.length === 0);
+  const pocosDatos = sigs.filter(s => !s.suficiente);
+
   let html = '';
 
-  html += '<section><div class="cifras">'+
+  /* ===== TITULAR: lo que ella viene a saber ===== */
+  let tit, sub, clase = 'neutro';
+  if(haySemanas){
+    const v = veredictoSemanal(sem1, sem2);
+    tit = v.texto; clase = v.clase;
+    const partes = [];
+    if(sem1.epsDia !== null) partes.push(red1(sem1.epsDia)+' → '+red1(sem2.epsDia)+' episodios al día');
+    if(sem1.fondo !== null && sem2.fondo !== null)
+      partes.push('fondo '+red1(sem1.fondo)+' → '+red1(sem2.fondo));
+    sub = partes.join(' · ');
+  }else{
+    tit = 'Llevas '+plural(todas.length,'día','días')+' de registro';
+    sub = 'Para comparar cómo vas hacen falta dos semanas completas.';
+  }
+  html += '<section><div class="titular '+clase+'"><div class="tit-t">'+tit+'</div>'+
+          (sub ? '<div class="tit-s">'+sub+'</div>' : '')+'</div></section>';
+
+  /* ===== QUÉ TE LO EMPEORA ===== */
+  html += '<section><h2>Qué te lo empeora</h2>';
+  if(conSenal.length > 0){
+    html += '<div class="tarjeta">';
+    conSenal.forEach(s => { html += filaSenal(s); });
+    html += '</div>';
+  }else{
+    html += '<div class="tarjeta"><div class="vacio" style="padding:18px">'+
+            (sigs.length === 0
+              ? 'Marca la regla, las relaciones y el consumo en la pantalla del día.'
+              : 'Por ahora nada se despega del resto.')+
+            '</div></div>';
+  }
+  if(sinSenal.length > 0 || pocosDatos.length > 0){
+    let resto = '';
+    if(sinSenal.length > 0){
+      resto += '<div class="ox-grupo"><div class="ox-t">Sin diferencia por ahora</div>'+
+               '<div class="ox-l">'+sinSenal.map(s => escapar(s.mk.titulo)).join(', ')+'</div></div>';
+    }
+    if(pocosDatos.length > 0){
+      resto += '<div class="ox-grupo"><div class="ox-t">Con muy pocos días todavía</div>'+
+               '<div class="ox-l">'+pocosDatos.map(s => escapar(s.mk.titulo)+' ('+s.diasCon+')').join(', ')+
+               '</div></div>';
+    }
+    html += '<details class="desplegable"><summary>El resto de lo que marcas</summary>'+
+            '<div class="ox">'+resto+'</div></details>';
+  }
+  html += '</section>';
+
+  /* ===== CIFRAS DEL PERÍODO ===== */
+  html += '<section><h2>El período completo</h2><div class="cifras">'+
     '<div class="cifra"><div class="cifra-n">'+todosEps.length+'</div>'+
-      '<div class="cifra-t">episodios en '+fechas.length+' día(s)</div></div>'+
+      '<div class="cifra-t">episodios en '+plural(fechas.length,'día','días')+'</div></div>'+
     '<div class="cifra"><div class="cifra-n">'+diasSinMolestia+'</div>'+
       '<div class="cifra-t">días sin ninguna molestia</div></div>'+
     '<div class="cifra"><div class="cifra-n">'+(promInt !== null ? red1(promInt) : '—')+'</div>'+
@@ -1334,87 +1491,24 @@ function pintarInforme(){
       '<div class="cifra-t">duración promedio</div></div>'+
     '</div></section>';
 
-  /* ----- ¿vas mejor? ----- */
-  html += '<section><h2>¿Vas mejor?</h2><div class="tarjeta">';
-  const todas = [];
-  let f = datos.config.inicio, g = 0;
-  while(f <= hoyISO() && g < 400){ todas.push(f); f = sumarDias(f,1); g++; }
-  if(todas.length < 8){
-    html += '<div class="vacio" style="padding:14px">Para comparar hace falta más de una semana.<br>'+
-            'Llevas '+todas.length+' día(s) de tratamiento.</div>';
-  }else{
-    const sem1 = todas.slice(0,7);
-    const sem2 = todas.slice(7,14);
-    const a = resumenBloque(sem1), b = resumenBloque(sem2);
+  /* ===== SEMANA 1 VS SEMANA 2 ===== */
+  if(haySemanas){
+    html += '<section><h2>Semana 1 contra semana 2</h2><div class="tarjeta">';
     html += '<div style="display:flex;font-size:12px;color:var(--texto-suave);'+
             'justify-content:flex-end;gap:10px;padding-bottom:4px">'+
             '<span style="width:56px;text-align:right">días 1-7</span>'+
             '<span style="width:26px"></span>'+
-            '<span style="width:56px;text-align:right">días 8-'+(7+sem2.length)+'</span></div>';
-    html += filaComp('Episodios por día', a.epsDia, b.epsDia, true, '');
-    html += filaComp('Intensidad promedio', a.intProm, b.intProm, true, '');
-    html += filaComp('Minutos de molestia al día', a.minDia, b.minDia, true, '');
-    html += filaComp('Días sin molestia', a.diasLimpios, b.diasLimpios, false, '');
-    html += filaComp('Sensación de fondo (0-3)', a.fondo, b.fondo, true, '');
+            '<span style="width:56px;text-align:right">días 8-'+(7+Math.min(7,todas.length-7))+'</span></div>';
+    html += filaComp('Episodios por día', sem1.epsDia, sem2.epsDia, true, '');
+    html += filaComp('Intensidad promedio', sem1.intProm, sem2.intProm, true, '');
+    html += filaComp('Minutos de molestia al día', sem1.minDia, sem2.minDia, true, '', true);
+    html += filaComp('Días sin molestia', sem1.diasLimpios, sem2.diasLimpios, false, '');
+    html += filaComp('Sensación de fondo (0-3)', sem1.fondo, sem2.fondo, true, '');
     html += '<div class="nota-metodo">Verde = va en la dirección deseada.</div>';
-  }
-  html += '</div></section>';
-
-  /* ----- menstruación y relaciones: la sección que se mira con el tiempo ----- */
-  html += '<section><h2>Menstruación y relaciones sexuales</h2><div class="tarjeta">';
-  let hayPrincipal = false;
-  PRINCIPALES.forEach(mk => {
-    const t = tarjetaCruce(mk, fechas);
-    if(t){ hayPrincipal = true; html += t; }
-  });
-
-  // Cruce de las dos variables entre sí: los días en que coinciden
-  const ambas = fechas.filter(f => tieneMarca(f, MARCA_SANGRADO) === true &&
-                                   tieneMarca(f, MARCA_SEXO) === true);
-  if(ambas.length > 0){
-    const st = statsDe(ambas.map(metricasDia));
-    html += '<div class="cruce"><div class="cruce-titulo">Las dos el mismo día</div>'+
-            '<div class="cruce-n">'+ambas.length+' día(s)</div>'+
-            '<div class="veredicto">'+red1(st.eps)+' episodios/día'+
-            (st.int !== null ? ' · intensidad '+red1(st.int) : '')+'</div></div>';
+    html += '</div></section>';
   }
 
-  if(!hayPrincipal){
-    html += '<div class="vacio" style="padding:14px">Marca la menstruación y las relaciones '+
-            'en la pantalla del día.<br>Este cruce necesita semanas, no días: con un ciclo '+
-            'irregular hacen falta al menos dos menstruaciones registradas para que '+
-            'signifique algo.</div>';
-  }
-  html += '</div>';
-
-  // Los días en blanco no entran en ninguna comparación: conviene saber cuántos son
-  const enBlanco = fechas.filter(f => !diaRegistrado(f));
-  if(enBlanco.length > 0){
-    html += '<div class="nota-metodo"><b>'+enBlanco.length+' día(s) del período quedaron en '+
-            'blanco</b> y están fuera de todas las comparaciones. Complétalos con la flecha ‹ '+
-            'o márcalos como días sin nada que anotar.</div>';
-  }
-  html += NOTA_METODO_CRUCE+'</section>';
-
-  /* ----- sensación de fondo ----- */
-  const conFondo = metricas.filter(m => m.fondo !== null);
-  html += '<section><h2>Sensación de fondo</h2><div class="tarjeta">';
-  if(conFondo.length === 0){
-    html += '<div class="vacio" style="padding:14px">Anota al final del día cómo estuvo la zona '+
-            'en general.<br>Es lo que muestra si el fondo se va calmando, aunque sigan apareciendo brotes.</div>';
-  }else{
-    const repartoFondo = FONDO.map(op => ({
-      clave: op.t,
-      n: conFondo.filter(m => m.fondo === op.v).length
-    })).filter(x => x.n > 0);
-    html += barrasHorizontales(repartoFondo, conFondo.length, false);
-    const pf = promFondo(conFondo);
-    html += '<div class="nota-metodo" style="margin-top:2px">Promedio '+red1(pf)+' de 3, '+
-            'sobre '+conFondo.length+' día(s) anotados.</div>';
-  }
-  html += '</div></section>';
-
-  /* ----- día a día ----- */
+  /* ===== DÍA A DÍA ===== */
   html += '<section><h2>Día a día</h2><div class="tarjeta"><div class="dias">';
   metricas.forEach(m => {
     const ctx = datos.contexto[m.fecha];
@@ -1429,63 +1523,81 @@ function pintarInforme(){
       '<div class="dia-sexo'+((ctx && ctx.sexo) ? ' on' : '')+'"></div>'+
       '<div class="dia-fondo'+(m.fondo !== null ? ' f'+m.fondo : '')+'"></div></div>';
   });
-  html += '</div><div class="nota-metodo">La barra es la molestia más fuerte de ese día (0 a 10). '+
-          'Verde claro = día sin molestias. El • marca que ese día anotaste algún factor. '+
-          'Abajo, la línea morada son los días con menstruación y la azul, los días con '+
-          'relaciones sexuales. El cuadrito final es la sensación de fondo: más oscuro, '+
-          'más sensible.</div></div></section>';
+  html += '</div><div class="leyenda">'+
+          '<span><i class="lg-barra"></i>molestia más fuerte del día</span>'+
+          '<span><i class="lg-cero"></i>día sin molestias</span>'+
+          '<span><i class="lg-sang"></i>menstruación</span>'+
+          '<span><i class="lg-sexo"></i>relaciones</span>'+
+          '<span><i class="lg-fondo"></i>fondo (más oscuro, más sensible)</span>'+
+          '</div></div></section>';
 
-  /* ----- horario ----- */
-  const bloques = [{t:'Madrugada (0-6)',d:0,h:6},{t:'Mañana (6-12)',d:6,h:12},
-                   {t:'Tarde (12-18)',d:12,h:18},{t:'Noche (18-24)',d:18,h:24}];
-  const porBloque = bloques.map(b => ({
-    clave:b.t,
-    n:todosEps.filter(e => { const hh = new Date(e.inicio).getHours(); return hh >= b.d && hh < b.h; }).length
-  })).filter(x => x.n > 0);
-  html += '<section><h2>¿A qué hora aparece?</h2><div class="tarjeta">'+
-          barrasHorizontales(porBloque, todosEps.length, false)+'</div></section>';
-
-  /* ----- respuesta a la crema ----- */
-  const dur = contar(todosEps.filter(e => e.duracionAlivio).map(e => e.duracionAlivio));
-  html += '<section><h2>Respuesta a la crema</h2><div class="tarjeta">'+
-          barrasHorizontales(dur, 0, true);
-  html += '</div></section>';
-
-  /* ----- cruces (solo los factores sueltos) ----- */
-  /* ----- consumo irritante ----- */
-  html += '<section><h2>Consumo irritante</h2><div class="tarjeta">';
-  let hayConsumo = false;
-  CONSUMOS.forEach(mk => {
-    const t = tarjetaCruce(mk, fechas);
-    if(t){ hayConsumo = true; html += t; }
-  });
-  if(!hayConsumo){
-    html += '<div class="vacio" style="padding:14px">Marca en "Consumo" lo que tomas o comes '+
-            'cada día.<br>"Algún irritante" junta todos y da señal antes que cada uno por separado.</div>';
+  /* ===== SENSACIÓN DE FONDO ===== */
+  const conFondo = metricas.filter(m => m.fondo !== null);
+  if(conFondo.length > 0){
+    const repartoFondo = FONDO.map(op => ({
+      clave: op.t, n: conFondo.filter(m => m.fondo === op.v).length
+    })).filter(x => x.n > 0);
+    html += '<section><h2>Sensación de fondo</h2><div class="tarjeta">'+
+            barrasHorizontales(repartoFondo, conFondo.length, false)+
+            '<div class="nota-metodo" style="margin-top:2px">Promedio '+red1(promFondo(conFondo))+
+            ' de 3, sobre '+plural(conFondo.length,'día anotado','días anotados')+'.</div></div></section>';
   }
-  html += '</div>'+NOTA_METODO_CRUCE+'</section>';
 
-  html += '<section><h2>Otros factores</h2><div class="tarjeta">';
-  let algunCruce = false;
-  MARCADORES.forEach(mk => {
-    if(esPrincipal(mk.clave) || esConsumo(mk.clave)) return;   // esos van en su propia sección
-    const t = tarjetaCruce(mk, fechas);
-    if(t){ algunCruce = true; html += t; }
-  });
-  if(!algunCruce){
-    html += '<div class="vacio" style="padding:14px">Marca cosas en "Otras cosas de este día" '+
-            'y aquí vas a ver si se relacionan con las molestias.</div>';
-  }
-  html += '</div>'+NOTA_METODO_CRUCE+'</section>';
-
-  /* ----- listados ----- */
+  /* ===== PERFIL DE LOS EPISODIOS (todo junto, no 6 secciones) ===== */
   const junta = campo => contar([].concat.apply([], todosEps.map(e => e[campo] || [])));
-  html += '<section><h2>Gatillantes inmediatos</h2><div class="tarjeta">'+barrasHorizontales(junta('gatillantes'),0,false)+'</div></section>';
-  html += '<section><h2>Cómo se siente</h2><div class="tarjeta">'+barrasHorizontales(junta('tipos'),0,false)+'</div></section>';
-  html += '<section><h2>Dónde</h2><div class="tarjeta">'+barrasHorizontales(junta('localizacion'),0,false)+'</div></section>';
-  html += '<section><h2>Síntomas al orinar</h2><div class="tarjeta">'+barrasHorizontales(junta('urinarios'),0,false)+'</div></section>';
-  html += '<section><h2>Qué te impidió hacer</h2><div class="tarjeta">'+barrasHorizontales(junta('impacto'),0,false)+'</div></section>';
-  html += '<section><h2>Qué la alivia</h2><div class="tarjeta">'+barrasHorizontales(junta('alivio'),0,true)+'</div></section>';
+  const bloques = [
+    {t:'Horario', items: (function(){
+      const bs = [{t:'Madrugada',d:0,h:6},{t:'Mañana',d:6,h:12},{t:'Tarde',d:12,h:18},{t:'Noche',d:18,h:24}];
+      return bs.map(b => ({clave:b.t, n:todosEps.filter(e => {
+        const hh = new Date(e.inicio).getHours(); return hh >= b.d && hh < b.h;
+      }).length})).filter(x => x.n > 0).sort((a,b) => b.n-a.n);
+    })()},
+    {t:'Cómo se siente', items: junta('tipos')},
+    {t:'Dónde',          items: junta('localizacion')},
+    {t:'Al orinar',      items: junta('urinarios')},
+    {t:'Qué la alivia',  items: junta('alivio')},
+    {t:'Cuánto dura el alivio',
+     items: contar(todosEps.filter(e => e.duracionAlivio).map(e => e.duracionAlivio))},
+    {t:'Te impidió',     items: junta('impacto')},
+    {t:'Gatillante en el momento', items: junta('gatillantes')}
+  ].filter(b => b.items.length > 0);
+
+  if(bloques.length > 0){
+    html += '<section><h2>Cómo son tus episodios</h2><div class="tarjeta">';
+    bloques.forEach(b => {
+      html += '<div class="perfil"><div class="perfil-t">'+b.t+'</div><div class="perfil-v">'+
+        b.items.slice(0,4).map(i => escapar(i.clave)+' <em>'+i.n+'</em>').join(' · ')+
+        '</div></div>';
+    });
+    html += '<div class="nota-metodo">El número es cuántos episodios tienen esa marca.</div>';
+    html += '</div></section>';
+  }
+
+  /* ===== DÍAS EN BLANCO ===== */
+  const enBlanco = fechas.filter(fe => !diaRegistrado(fe));
+  if(enBlanco.length > 0){
+    const uno = enBlanco.length === 1;
+    html += '<section><div class="aviso"><strong>'+plural(enBlanco.length,'día quedó','días quedaron')+
+            ' en blanco</strong>'+(uno ? 'Está' : 'Están')+' fuera de todas las comparaciones. '+
+            (uno ? 'Complétalo' : 'Complétalos')+' con la flecha ‹ de la pantalla del día, o '+
+            (uno ? 'márcalo' : 'márcalos')+' como '+(uno ? 'día' : 'días')+' sin nada que anotar.</div></section>';
+  }
+
+  /* ===== CÓMO LEER ESTO ===== */
+  html += '<section><details class="desplegable"><summary>Cómo leer este informe</summary><div class="ox">'+
+    '<div class="ox-grupo"><div class="ox-t">Episodios/día</div>'+
+    '<div class="ox-l">Cuántas veces al día apareció la molestia, en promedio.</div></div>'+
+    '<div class="ox-grupo"><div class="ox-t">Intensidad</div>'+
+    '<div class="ox-l">Qué tan fuerte, de 0 a 10, promediada solo entre los episodios que anotaste.</div></div>'+
+    '<div class="ox-grupo"><div class="ox-t">Fondo</div>'+
+    '<div class="ox-l">La sensación de base del día, de 0 a 3. Sube aunque no haya brotes.</div></div>'+
+    '<div class="ox-grupo"><div class="ox-t">"Sin esto"</div>'+
+    '<div class="ox-l">Los días sin esa marca ese día ni en los días previos, para que el arrastre '+
+    'no ensucie la comparación.</div></div>'+
+    '<div class="ox-nota">Esto muestra coincidencias, no causas. Sirve para llegar al control con '+
+    'preguntas concretas, no para sacar conclusiones sola. Hacen falta al menos 3 días con la marca '+
+    'y 3 sin ella antes de que la app diga nada.</div>'+
+    '</div></details></section>';
 
   html += '<section><button class="btn-linea" onclick="copiarResumen()">'+
           'Copiar resumen para el control<small>Texto listo para leer o enviar al médico</small></button>'+
@@ -1520,6 +1632,23 @@ function copiarResumen(){
   const junta = campo => contar([].concat.apply([], eps.map(e => e[campo]||[])));
 
   let t = 'REGISTRO — '+fechas[0]+' a '+fechas[fechas.length-1]+'\n\n';
+
+  // La conclusión primero: es lo que el médico lee de una pasada
+  const todasF = [];
+  let ff = datos.config.inicio, gg = 0;
+  while(ff <= hoyISO() && gg < 400){ todasF.push(ff); ff = sumarDias(ff,1); gg++; }
+  if(todasF.length >= 8){
+    const a = resumenBloque(todasF.slice(0,7)), b = resumenBloque(todasF.slice(7,14));
+    t += veredictoSemanal(a, b).texto.toUpperCase()+'\n';
+  }
+  const sigsT = senales(fechas).filter(x => x.suficiente && x.peores.length > 0);
+  const hayC = sigsT.some(x => IRRITANTES.indexOf(x.mk.clave) !== -1);
+  const listaT = hayC ? sigsT.filter(x => x.mk.clave !== MARCA_IRRITANTE) : sigsT;
+  if(listaT.length){
+    t += 'Lo que coincide con empeoramiento: '+
+         listaT.map(x => x.mk.titulo+' ('+cuandoTexto(x.peores).toLowerCase()+')').join(', ')+'\n';
+  }
+  t += '\n';
   t += 'Episodios: '+eps.length+' en '+fechas.length+' días\n';
   t += 'Días sin molestia: '+metricas.filter(m => m.episodios === 0).length+'\n';
   t += 'Intensidad promedio: '+(promInt !== null ? red1(promInt)+'/10' : 'sin dato')+'\n';
@@ -1528,7 +1657,7 @@ function copiarResumen(){
   if(fondoProm !== null){
     const nF = metricas.filter(m => m.fondo !== null).length;
     t += 'Sensación de fondo: '+red1(fondoProm)+'/3 (0 nada, 3 molestia constante), '+
-         'sobre '+nF+' día(s)\n';
+         'sobre '+plural(nF,'día','días')+'\n';
   }
   t += '\n';
 
@@ -1545,11 +1674,11 @@ function copiarResumen(){
   const imp = junta('impacto');
   if(imp.length) t += 'Impacto: '+imp.slice(0,3).map(i => i.clave+' ('+i.n+')').join(', ')+'\n';
   const irr = contar([].concat.apply([], fechas.map(fe => (datos.contexto[fe] || {}).irritantes || [])));
-  if(irr.length) t += 'Consumo irritante: '+irr.map(i => i.clave+' ('+i.n+' día(s))').join(', ')+'\n';
+  if(irr.length) t += 'Consumo irritante: '+irr.map(i => i.clave+' ('+plural(i.n,'día','días')+')').join(', ')+'\n';
 
   // Cruces con sangrado y relaciones sexuales (lo que más le sirve al médico)
   let lineasCruce = '';
-  const linea = st => red1(st.eps)+' episodios/día'+
+  const linea = st => textoEps(st.eps)+
     (st.int   !== null ? ', intensidad '+red1(st.int)   : '')+
     (st.fondo !== null ? ', fondo '+red1(st.fondo)      : '');
   PRINCIPALES.concat([CONSUMOS[0]]).forEach(mk => {
@@ -1577,7 +1706,7 @@ function copiarResumen(){
     t += '  Episodios/día: '+red1(a.epsDia)+' → '+red1(b.epsDia)+'\n';
     if(a.intProm !== null && b.intProm !== null)
       t += '  Intensidad: '+red1(a.intProm)+' → '+red1(b.intProm)+'\n';
-    t += '  Minutos/día: '+red1(a.minDia)+' → '+red1(b.minDia)+'\n';
+    t += '  Minutos/día: '+Math.round(a.minDia)+' → '+Math.round(b.minDia)+'\n';
     if(a.fondo !== null && b.fondo !== null)
       t += '  Fondo (0-3): '+red1(a.fondo)+' → '+red1(b.fondo)+'\n';
   }
@@ -1585,7 +1714,7 @@ function copiarResumen(){
   t += '\nDetalle por día:\n';
   metricas.forEach(m => {
     const ctx = datos.contexto[m.fecha];
-    let l = m.fecha+': '+m.episodios+' episodio(s)';
+    let l = m.fecha+': '+plural(m.episodios,'episodio','episodios');
     if(m.maxInt !== null) l += ', máx '+m.maxInt+'/10';
     if(m.minutos > 0) l += ', '+m.minutos+' min';
     if(m.fondo !== null) l += ', fondo '+m.fondo+'/3';
@@ -1652,7 +1781,7 @@ function importar(ev){
         toast('Ese archivo no parece un respaldo de Bitácora.', true);
         ev.target.value = ''; return;
       }
-      if(!confirm('El respaldo tiene '+p.episodios.length+' episodio(s).\n\nEsto REEMPLAZA todo lo que tienes ahora. ¿Continuar?')){
+      if(!confirm('El respaldo tiene '+plural(p.episodios.length,'episodio','episodios')+'.\n\nEsto REEMPLAZA todo lo que tienes ahora. ¿Continuar?')){
         ev.target.value = ''; return;
       }
       datos = p;
@@ -1681,6 +1810,7 @@ function irA(vista){
   // Las flechas de día solo tienen sentido en la vista de día
   document.getElementById('flechaAtras').classList.toggle('oculto', vista !== 'hoy');
   document.getElementById('flechaAdelante').classList.toggle('oculto', vista !== 'hoy');
+  document.getElementById('estadoDia').classList.toggle('oculto', vista !== 'hoy');
   if(vista === 'hoy'){ pintarEncabezado(); }
   else{
     document.getElementById('tituloVista').textContent = (vista === 'informe') ? 'Informe' : 'Ajustes';
@@ -1693,10 +1823,21 @@ function irA(vista){
 }
 
 let tToast = null;
+// Confirma el guardado sin llenar la pantalla: si marcas varias cosas
+// seguidas, el aviso se reinicia en vez de apilarse.
+function avisarGuardado(){
+  const t = document.getElementById('toast');
+  t.textContent = '✓ Guardado';
+  t.classList.remove('error');
+  t.classList.add('ok','ver');
+  if(tToast) clearTimeout(tToast);
+  tToast = setTimeout(() => t.classList.remove('ver'), 1400);
+}
+
 function toast(mensaje, esError){
   const t = document.getElementById('toast');
   t.textContent = mensaje;
-  t.classList.remove('error');
+  t.classList.remove('error','ok');
   if(esError) t.classList.add('error');
   t.classList.add('ver');
   if(tToast) clearTimeout(tToast);
